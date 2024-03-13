@@ -2,14 +2,14 @@ import { LexicalType, Token } from "./types";
 import { EndOfTextError, OutOfRangeError, UnmatchableError } from "./errors";
 
 enum State {
-	START,
-	INASSIGN,
-	INRANGE,
-	INCOMMENT,
-	INNUM,
-	INID,
-	INCHAR,
-	DONE
+	START = "START",
+	INASSIGN = "INASSIGN",
+	INRANGE = "INRANGE",
+	INCOMMENT = "INCOMMENT",
+	INNUM = "INNUM",
+	INID = "INID",
+	INCHAR = "INCHAR",
+	DONE = "DONE"
 }
 
 const EOF = "\u1234";
@@ -147,7 +147,7 @@ export default function LexicalParser(text: string) {
 
 			// 点
 			else if (char === ".") {
-				return { next: State.DONE };
+				return { next: State.INRANGE };
 			}
 
 			// 单引号
@@ -185,7 +185,7 @@ export default function LexicalParser(text: string) {
 				return { next: State.DONE, lex: LexicalType.UNDERANGE };
 			}
 			else {
-				return { next: State.DONE, lex: LexicalType.DOT };
+				return { next: State.DONE, lex: LexicalType.DOT, reject: true, noSave: true };
 			}
 		},
 		[State.INCOMMENT]: function (char) {
@@ -214,10 +214,10 @@ export default function LexicalParser(text: string) {
 			else {
 				try {
 					const type = matchDirectLexicalType(token.value);
-					return { next: State.DONE, lex: type };
+					return { next: State.DONE, lex: type, noSave: true, reject: true };
 				}
 				catch (e) {
-					return { next: State.DONE, lex: LexicalType.ID };
+					return { next: State.DONE, lex: LexicalType.ID, noSave: true, reject: true };
 				}
 			}
 		},
@@ -258,7 +258,7 @@ export default function LexicalParser(text: string) {
 			if (result.lex !== undefined) token.type = result.lex;
 			if (!result.reject && result.lex !== LexicalType.ENDFILE) forward();
 		}
-
+		token.line = line;
 		return token;
 	};
 
@@ -275,8 +275,6 @@ export default function LexicalParser(text: string) {
 			throw e;
 		}
 		if (token) tokens.push(token);
-
-		console.log(token);
 	}
 	while (token.type !== LexicalType.ENDFILE);
 

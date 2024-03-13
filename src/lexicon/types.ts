@@ -1,4 +1,6 @@
 export enum LexicalType {
+    NONE = "NONE",
+
     /* 簿记单词符号 */
     ENDFILE = "ENDFILE",
     ERROR = "ERROR",
