@@ -61,7 +61,8 @@ const DirectLexicalTypeMatchers: Record<LexicalType, string> = {
 	[LexicalType.INTC]: "",
 	[LexicalType.CHARC]: "",
 	[LexicalType.ASSIGN]: "",
-	[LexicalType.UNDERANGE]: ""
+	[LexicalType.UNDERANGE]: "",
+	[LexicalType.NONE]: ""
 };
 
 // 匹配能够被直接识别的token
@@ -76,12 +77,12 @@ function matchDirectLexicalType(text: string) {
 	throw new UnmatchableError();
 }
 
-function isDigit(text: string) {
-	return "0123456789".includes(text);
+function isDigit(char: string) {
+	return "0123456789".includes(char);
 }
 
-function isLetter(text: string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(text);
+function isLetter(char: string) {
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(char);
 }
 
 export default function LexicalParser(text: string) {
@@ -122,14 +123,15 @@ export default function LexicalParser(text: string) {
 	};
 
 	interface StateMatcherResult {
+		next: State,
 		reject?: boolean,
 		noSave?: boolean,
-		next: State,
 		lex?: LexicalType
 	}
 
-	const StateMatchers: Record<State, (char: string, token: Token) => StateMatcherResult> = {
-		[State.START]: (char) => {
+	type StateMatcherFunction = (char: string, token: Token) => StateMatcherResult;
+	const StateMatchers: Record<State, StateMatcherFunction> = {
+		[State.START]: function (char) {
 			// 数字
 			if (isDigit(char)) {
 				return { next: State.INNUM };
