@@ -5,6 +5,7 @@ import ADD from "./add.snl?raw";
 
 test("Lexical Parser", () => {
 	const tokenList = LexicalParser(ADD);
+	console.log(tokenList);
 	expect(tokenList.map(t => t.type)).toEqual([
 		"PROGRAM", "ID", "TYPE", "ID",
 		"EQ", "INTEGER", "SEMI", "VAR",

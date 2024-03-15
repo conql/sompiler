@@ -226,7 +226,8 @@ export default function LexicalParser(text: string) {
 		[State.INCHAR]: function (char) {
 			if (isLetter(char) || isDigit(char)) {
 				const cnext = forward();
-				if (cnext == "\\") {
+				// 如果下一个字符是单引号，那么这个字符是一个字符常量
+				if (cnext == "\'") {
 					return { next: State.DONE, lex: LexicalType.CHARC };
 				}
 				else {
@@ -245,7 +246,11 @@ export default function LexicalParser(text: string) {
 
 
 	// 读取一个token，返回读取的token
+	// = () 不接受参数
+	// : Token 返回值类型
+	// => {} 函数体
 	const parseOneToken = (): Token => {
+		//在 JavaScript（以及 TypeScript）中，const 关键字用于声明一个变量，该变量的引用不能被重新分配
 		const token: Token = {
 			line,
 			type: LexicalType.ERROR,
