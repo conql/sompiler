@@ -227,7 +227,7 @@ export default function LexicalParser(text: string) {
 			if (isLetter(char) || isDigit(char)) {
 				const cnext = forward();
 				// 如果下一个字符是单引号，那么这个字符是一个字符常量
-				if (cnext == "\'") {
+				if (cnext == "'") {
 					return { next: State.DONE, lex: LexicalType.CHARC };
 				}
 				else {

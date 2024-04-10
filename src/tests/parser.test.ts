@@ -21,3 +21,20 @@ test("Lexical Parser", () => {
 	
 });
 
+interface SymbolNode {
+	kind: "string"
+}
+
+interface DecKindNode {
+	kind: "DecK"
+	kindType: string
+}
+
+type aaa = SymbolNode | DecKindNode;
+
+test("Syntactic Parser", () => {
+	let node = {kind:"string"} as aaa;
+	node.kind = "DecK";
+	node = node as DecKindNode;
+	node.kindType = "ArrayK";
+});
