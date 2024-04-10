@@ -1,13 +1,16 @@
 import { LexicalType } from "../lexicon/types";
 
+// 语法树节点类型
 export enum SymbolNodeKind {
+	// 标志节点
 	ProK = "ProK",
 	PheadK = "PheadK",
-	DecK = "DecK",
 	TypeK = "TypeK",
 	VarK = "VarK",
 	ProcDecK = "ProcDecK",
 	StmLK = "StmLK",
+	// 具体节点
+	DecK = "DecK",
 	StmtK = "StmtK",
 	ExpK = "ExpK"
 }
@@ -79,30 +82,28 @@ export interface SymbolNodeBase{
 // 标志节点类型：无具体内容，只有kind属性
 // ProK, PheadK, TypeK, VarK, ProcDecK, StmLK
 export interface SymbolNodeCommon extends SymbolNodeBase{
+	// 标志节点类型中，kind属性为SymbolNodeKind中的几种类型
 	kind: SymbolNodeKind.ProK | SymbolNodeKind.PheadK | SymbolNodeKind.TypeK | SymbolNodeKind.VarK | SymbolNodeKind.ProcDecK | SymbolNodeKind.StmLK;
+	// 当kind为ProcDecK时，attr属性存在
+	attr?: {
+		paramt?: ParamTypes;
+	};
 }
 
 // 具体节点类型：有具体内容
 // 由 DecK, StmtK, ExpK 几种组成
 export type SymbolSpecificNode = SymbolNodeDecK | SymbolNodeStmtK | SymbolNodeExpK;
 
-// DeckK 的几种子类型由subKind属性区分
-export type SymbolNodeDecK = SymbolNodeDeckCommon | SymbolNodeDeckArray;
-
-// 除了ArrayK之外的DecK节点，因为ArrayK节点具有attr，需要分开定义
-export interface SymbolNodeDeckCommon extends SymbolNodeBase{
+export interface SymbolNodeDecK extends SymbolNodeBase{
 	kind: SymbolNodeKind.DecK;
-	subKind: Omit<DecKinds, DecKinds.ArrayK>; // DecKinds中除了ArrayK的其他类型
-}
-
-// ArrayK节点，具有attr属性
-export interface SymbolNodeDeckArray extends SymbolNodeBase{
-	kind: SymbolNodeKind.DecK;
-	subKind: DecKinds.ArrayK;
-	attr: {
-		low: number;
-		high: number;
-		child: SymbolNode;
+	// DecK的子类型由subKind属性区分，有ArrayK, CharK, IntegerK, RecordK, IdK
+	subKind: DecKinds;
+	// 当subKind为ArrayK时，attr属性存在
+	attr?: {
+		low?: number;	// 数组下界
+		high?: number;	//	数组上界
+		// 记录数组的成员类型
+		childType?: DecKinds;
 	};
 }
 
