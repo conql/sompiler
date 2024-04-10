@@ -36,10 +36,11 @@ export enum StmtKinds {
 export enum ExpKinds {
 	OpK = "OpK",
 	ConstK = "ConstK",
-	VariK = "VariK",
-	ProcIdK = "ProcIdK"
+	VariK = "VariK"
 }
 
+/* 变量类型VarKind类型的枚举定义:           *
+ * 标识符IdV,数组成员ArrayMembV,域成员FieldMembV*/
 export enum VarKinds {
 	IdV = "IdV",
 	ArrayMembV = "ArrayMembV",
@@ -55,6 +56,8 @@ export enum ExpOp{
 	OVER = LexicalType.OVER
 }
 
+/* 表达式类型ExpKind类型的枚举定义:         *
+ * 操作类型OpK,常数类型ConstK,变量类型VarK */
 export enum ExpTypes {
 	Void = "Void",
 	Integer = "Integer",
@@ -102,8 +105,7 @@ export interface SymbolNodeDecK extends SymbolNodeBase{
 	attr?: {
 		low?: number;	// 数组下界
 		high?: number;	//	数组上界
-		// 记录数组的成员类型
-		childType?: DecKinds;
+		childType?: DecKinds;	// 记录数组的成员类型
 	};
 }
 
@@ -117,10 +119,10 @@ export interface SymbolNodeStmtK extends SymbolNodeBase{
 export interface SymbolNodeExpK extends SymbolNodeBase{
 	kind: SymbolNodeKind.ExpK;
 	subKind: ExpKinds;
-	attr: {
+	attr?: {
 		op?: ExpOp;
 		val?: number;
-		varKind: VarKinds;
+		varKind?: VarKinds;
 		type?: ExpTypes;
 	};
 }
