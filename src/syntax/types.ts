@@ -70,7 +70,7 @@ export enum ParamTypes {
 }
 
 // SymbolNode类型：要么是标志节点类型，要么是具体节点类型
-type SymbolNode = SymbolNodeCommon | SymbolSpecificNode;
+export type SymbolNode = SymbolNodeCommon | SymbolSpecificNode;
 
 // 所有节点共有的基本属性
 export interface SymbolNodeBase{

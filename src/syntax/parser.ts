@@ -1,6 +1,6 @@
 import { s } from "vitest/dist/reporters-MmQN-57K.js";
 import { LexicalType, Token } from "../lexicon/types";
-import { SymbolNode, SymbolNodeKind, DecKind, StmtKind, ExpKind, VarKind, ExpType } from "./types";
+import { SymbolNode, SymbolNodeCommon, SymbolSpecificNode, SymbolNodeKind, DecKinds, StmtKinds, ExpKinds, VarKinds, ExpTypes } from "./types";
 
 
 
@@ -42,12 +42,12 @@ export default function SyntacticParser(tokens: Token[]) {
 	const baseType = (node: SymbolNode) => {
 		if (current().type === LexicalType.INTEGER) {
 			match(LexicalType.INTEGER);
-			node.kind = DecKind.IntegerK;
+			node.kind = DecKinds.IntegerK;
 			return;
 		}
 		else if (current().type === LexicalType.CHAR) {
 			match(LexicalType.CHAR);
-			node.kind = DecKind.CharK;
+			node.kind = DecKinds.CharK;
 			return;
 		}
 		else {
@@ -76,7 +76,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		match(LexicalType.OF);
 		baseType(node);
 		node.attr.childType = node.kind;
-		node.kind = DecKind.ArrayK;
+		node.kind = DecKinds.ArrayK;
 	}
 
 	const fieldDecMore = () => {
@@ -826,7 +826,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	const program = () => {
 
-		const node = new SymbolNode(SymbolNodeKind.ProK, null, [], null, line, []);
+		const node = new SymbolNodeCommon(SymbolNodeKind.ProK, null, [], null, line, []);
 		const head = programHead();
 		if (!head) {
 			throw new SyntacticError("Program head is missing.");
