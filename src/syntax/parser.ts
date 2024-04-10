@@ -1,6 +1,6 @@
 import { s } from "vitest/dist/reporters-MmQN-57K.js";
 import { LexicalType, Token } from "../lexicon/types";
-import { SymbolNode, SymbolNodeCommon, SymbolSpecificNode, SymbolNodeKind, DecKinds, StmtKinds, ExpKinds, VarKinds, ExpTypes } from "./types";
+import { SymbolNode, SymbolNodeCommon, SymbolSpecificNode, SymbolNodeKind, DecKinds, StmtKinds, ExpKinds, VarKinds, ExpTypes, SymbolNodeDecK } from "./types";
 
 
 
@@ -22,7 +22,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		return forward();
-	}
+	};
 
 	const current = () => {
 		return tokens[tokenPointer];
@@ -30,13 +30,20 @@ export default function SyntacticParser(tokens: Token[]) {
 
 
 	const programHead = () => {
-		const node = new SymbolNode(SymbolNodeKind.PheadK, null, [], null, line, []);
+		const node: SymbolNodeCommon = {
+			kind: SymbolNodeKind.PheadK,
+			line,
+			children: [],
+			names: [],
+			table: undefined
+		};
 		match(LexicalType.PROGRAM);
 		if (current().type === LexicalType.ID) {
+			node.line = 0;
 			node.names.push(current().value);
 		}
 		match(LexicalType.ID);
-		return null;
+		return node;
 	};
 
 	const baseType = (node: SymbolNode) => {
@@ -55,7 +62,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return;
 		}
-	}
+	};
 
 	const arrayType = (node: SymbolNode) => {
 		match(LexicalType.ARRAY);
@@ -77,7 +84,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		baseType(node);
 		node.attr.childType = node.kind;
 		node.kind = DecKinds.ArrayK;
-	}
+	};
 
 	const fieldDecMore = () => {
 		if (current().type === LexicalType.END)
@@ -93,10 +100,10 @@ export default function SyntacticParser(tokens: Token[]) {
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return null;
 		}
-	}
+	};
 
 	const fieldDecList = () => {
-		let node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
+		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
 		let fieldDecMore_ = null;
 		if (node){
 			if (current().type === LexicalType.INTEGER
@@ -123,7 +130,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			node.sibling = fieldDecMore_;
 		}
 		return node;
-	}
+	};
 
 	const recType = (node: SymbolNode) => {
 		match(LexicalType.RECORD);
@@ -135,7 +142,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			throw new SyntaxError("a record body is missing.");
 		match(LexicalType.END);
 		node.kind = DecKind.RecordK;
-	}
+	};
 
 	const structureType = (node: SymbolNode) => {
 		if (current().type === LexicalType.ARRAY) {
@@ -151,13 +158,13 @@ export default function SyntacticParser(tokens: Token[]) {
 		forward();
 		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
-	}
+	};
 
 	const typeDecMore = () => {
 		if (current().type === LexicalType.VAR
 			|| current().type === LexicalType.PROCEDURE
 			|| current().type === LexicalType.BEGIN
-			)
+		)
 			return null;
 		else if (current().type === LexicalType.ID)
 		{
@@ -166,7 +173,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		forward();
 		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
-	}
+	};
 
 	const typeName = (node: SymbolNode): void => {
 		if (
@@ -195,7 +202,7 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 	const typeDecList = () => {
-		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, [])
+		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
 		if (node) {
 			//typeId
 			if (current().type === LexicalType.ID)
@@ -214,7 +221,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			}
 		}
 		return node;
-	}
+	};
 
 	const typeDeclaration = () => {
 		match(LexicalType.TYPE);
@@ -223,7 +230,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			throw new SyntaxError("Type declaration list is missing.");
 		}
 		return node;
-	}
+	};
 
 	const typeDec = () => {
 		if (current().type === LexicalType.TYPE)
@@ -233,13 +240,13 @@ export default function SyntacticParser(tokens: Token[]) {
 		if (current().type === LexicalType.VAR
 			|| current().type === LexicalType.PROCEDURE
 			|| current().type === LexicalType.BEGIN
-			)
+		)
 			return null;
 		forward();
 		// print syntaxerror
 		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
-	}
+	};
 
 	const varIdMore = (node :SymbolNode) => {
 		if (current().type === LexicalType.SEMI)
@@ -254,7 +261,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			forward();
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
-	}
+	};
 
 
 	const varIdList = (node: SymbolNode) => {
@@ -267,7 +274,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		varIdMore(node);
-	}
+	};
 
 	const varDecMore = () => {
 		let node = null;
@@ -288,7 +295,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		return node;
-	}
+	};
 
 	const varDecList = () => {
 		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
@@ -301,7 +308,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			node.sibling = p;
 		}
 		return node;
-	}
+	};
 
 	const varDeclaration = () => {
 		match(LexicalType.VAR);
@@ -310,7 +317,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			throw new SyntaxError("Variable declaration list is missing.");
 		}
 		return node;
-	}
+	};
 
 	const varDec = () => {
 		if (current().type === LexicalType.PROCEDURE
@@ -326,24 +333,38 @@ export default function SyntacticParser(tokens: Token[]) {
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return null;
 		}
-	}
+	};
 
 	const declarePart = () => {
 		// 类型
-		let typeP = new SymbolNode(SymbolNodeKind.TypeK, null, [], null, line, []);
+		let typeP: SymbolNodeCommon = {
+			kind: SymbolNodeKind.TypeK,
+			line: line,
+			children: [],
+			names: [],
+			table: undefined
+		};
 
 		if (typeP){
+			typeP.line = 0;
 			const tp1 = typeDec();
 			if (tp1)
 				typeP.children.push(tp1);
 		}
 
 		// 变量
-		let varP = new SymbolNode(SymbolNodeKind.VarK, null, [], null, line, []);
+		const varP: SymbolNodeCommon = {
+			kind: SymbolNodeKind.ProK,
+			line: 0,
+			children: [],
+			names: [],
+			table: undefined
+		};
+
 		if (varP){
 			const tp2 = varDec();
 			if (tp2)
-				varP.children.push(tp2);
+				varP.children.push(tp2);	
 		}
 
 		const paramList = (node: SymbolNode) => {
@@ -363,7 +384,7 @@ export default function SyntacticParser(tokens: Token[]) {
 				forward();
 				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			}
-		}
+		};
 
 		const programBody = () => {
 			const node = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
@@ -374,7 +395,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			}
 			match(LexicalType.END);
 			return node;
-		}
+		};
 
 		const procBody = () => {
 			const node = programBody();
@@ -382,11 +403,11 @@ export default function SyntacticParser(tokens: Token[]) {
 				throw new SyntaxError("Procedure body is missing.");
 			}
 			return node;
-		}
+		};
 
 		const procDecPart = () => {
 			return declarePart();
-		}
+		};
 
 		const procDeclaration = () => {
 			const node = new SymbolNode(SymbolNodeKind.ProcDecK, null, [], null, line, []);
@@ -394,10 +415,10 @@ export default function SyntacticParser(tokens: Token[]) {
 			if (node)
 			{
 				if (current().type === LexicalType.ID)
-					{
-						node.names.push(current().value);
-						match(LexicalType.ID);
-					}
+				{
+					node.names.push(current().value);
+					match(LexicalType.ID);
+				}
 				match(LexicalType.LPAREN);
 				paramList(node);
 				match(LexicalType.RPAREN);
@@ -409,7 +430,7 @@ export default function SyntacticParser(tokens: Token[]) {
 				node.sibling = procDec();
 			}
 			return node;
-		}
+		};
 
 		const procDec = () => {
 			if (current().type === LexicalType.BEGIN)
@@ -421,11 +442,11 @@ export default function SyntacticParser(tokens: Token[]) {
 				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			}
 			return null;
-		}
+		};
 
 
 		// 过程或函数
-		let procP = procDec();
+		const procP = procDec();
 		
 		if (typeP.children)
 			if (varP.children)
@@ -439,130 +460,130 @@ export default function SyntacticParser(tokens: Token[]) {
 				if (procP)
 					typeP.sibling = procP;
 			}
-		else if (!typeP.children)
-		{
-			if (varP.children)
-			{	
-				typeP = varP;
-				if (procP)
-					typeP.sibling = procP;
-			}
-			else if (!varP.children)
+			else if (!typeP.children)
 			{
-				if (procP)
-					return procP;
-				else return null;
+				if (varP.children)
+				{	
+					typeP = varP;
+					if (procP)
+						typeP.sibling = procP;
+				}
+				else if (!varP.children)
+				{
+					if (procP)
+						return procP;
+					else return null;
+				}
 			}
-		}
 		return typeP;
-	}
+	};
 
 	const fieldVarMore = (node: SymbolNode) => {
 		switch(current().type){
-			case LexicalType.ASSIGN:
-			case LexicalType.TIMES:
-			case LexicalType.EQ:
-			case LexicalType.LT:
-			case LexicalType.PLUS:
-			case LexicalType.MINUS:
-			case LexicalType.OVER:
-			case LexicalType.RPAREN:
-			case LexicalType.RMIDPAREN:
-			case LexicalType.SEMI:
-			case LexicalType.COMMA:
-			case LexicalType.THEN:
-			case LexicalType.ELSE:
-			case LexicalType.FI:
-			case LexicalType.DO:
-			case LexicalType.ENDWH:
-			case LexicalType.END:
-				break;
-			case LexicalType.LMIDPAREN:
-				match(LexicalType.LMIDPAREN);
-				const p = exp();
-				p.attr = {
-					type: "Exp",
-					varKind: VarKind.ArrayMembV,
-				};
-				node.children.push(p);
-				match(LexicalType.RMIDPAREN);
-				break;
-			default:
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-				break;
-			}
+		case LexicalType.ASSIGN:
+		case LexicalType.TIMES:
+		case LexicalType.EQ:
+		case LexicalType.LT:
+		case LexicalType.PLUS:
+		case LexicalType.MINUS:
+		case LexicalType.OVER:
+		case LexicalType.RPAREN:
+		case LexicalType.RMIDPAREN:
+		case LexicalType.SEMI:
+		case LexicalType.COMMA:
+		case LexicalType.THEN:
+		case LexicalType.ELSE:
+		case LexicalType.FI:
+		case LexicalType.DO:
+		case LexicalType.ENDWH:
+		case LexicalType.END:
+			break;
+		case LexicalType.LMIDPAREN:
+			match(LexicalType.LMIDPAREN);
+			const p = exp();
+			p.attr = {
+				type: "Exp",
+				varKind: VarKind.ArrayMembV,
+			};
+			node.children.push(p);
+			match(LexicalType.RMIDPAREN);
+			break;
+		default:
+			forward();
+			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			break;
 		}
+	};
 
 	const fieldVar = () => {
-		let t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
 		t.kind = ExpKind.VariK;
 		if (t&&current().type === LexicalType.ID)
 			t.names.push(current().value);
 		match(LexicalType.ID);
 		fieldVarMore(t);
 		return t;
-	}
+	};
 
 
 	const variMore = (node: SymbolNode) => {
 		switch(current().type){
-			case LexicalType.ASSIGN:
-			case LexicalType.TIMES:
-			case LexicalType.EQ:
-			case LexicalType.LT:
-			case LexicalType.PLUS:
-			case LexicalType.MINUS:
-			case LexicalType.OVER:
-			case LexicalType.RPAREN:
-			case LexicalType.RMIDPAREN:
-			case LexicalType.SEMI:
-			case LexicalType.COMMA:
-			case LexicalType.THEN:
-			case LexicalType.ELSE:
-			case LexicalType.FI:
-			case LexicalType.DO:
-			case LexicalType.ENDWH:
-			case LexicalType.END:
-				break;
-			case LexicalType.LMIDPAREN:
-				match(LexicalType.LMIDPAREN);
-				const p = exp();
-				p.attr = {
-					type: "Exp",
-					varKind: VarKind.IdV,
-				};
-				node.children.push(p);
-				node.attr = {
-					type: "Exp",
-					varKind: VarKind.ArrayMembV,
-					expType: ExpType.Void,
-				};
-				match(LexicalType.RMIDPAREN);
-				break;
-			case LexicalType.DOT:
-				match(LexicalType.DOT);
-				const p2 = fieldVar();
-				p2.attr = {
-					type: "Exp",
-					varKind: VarKind.IdV,
-				};
-				node.children.push(p2);
-				node.attr = {
-					type: "Exp",
-					varKind: VarKind.FieldMembV,
-					expType: ExpType.Void,
-				};
-				break;
-			default:
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-				break;
-			}	
-		}
+		case LexicalType.ASSIGN:
+		case LexicalType.TIMES:
+		case LexicalType.EQ:
+		case LexicalType.LT:
+		case LexicalType.PLUS:
+		case LexicalType.MINUS:
+		case LexicalType.OVER:
+		case LexicalType.RPAREN:
+		case LexicalType.RMIDPAREN:
+		case LexicalType.SEMI:
+		case LexicalType.COMMA:
+		case LexicalType.THEN:
+		case LexicalType.ELSE:
+		case LexicalType.FI:
+		case LexicalType.DO:
+		case LexicalType.ENDWH:
+		case LexicalType.END:
+			break;
+		case LexicalType.LMIDPAREN:
+			match(LexicalType.LMIDPAREN);
+			const p = exp();
+			p.attr = {
+				type: "Exp",
+				varKind: VarKind.IdV,
+			};
+			node.children.push(p);
+			node.attr = {
+				type: "Exp",
+				varKind: VarKind.ArrayMembV,
+				expType: ExpType.Void,
+			};
+			match(LexicalType.RMIDPAREN);
+			break;
+		case LexicalType.DOT:
+			match(LexicalType.DOT);
+			const p2 = fieldVar();
+			p2.attr = {
+				type: "Exp",
+				varKind: VarKind.IdV,
+			};
+			node.children.push(p2);
+			node.attr = {
+				type: "Exp",
+				varKind: VarKind.FieldMembV,
+				expType: ExpType.Void,
+			};
+			break;
+		default:
+			forward();
+			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			break;
+		}	
+	};
 
 	const variable = () => {
-		let t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
 		t.kind = ExpKind.VariK;
 		t.attr = {
 			type: "Exp",
@@ -574,41 +595,41 @@ export default function SyntacticParser(tokens: Token[]) {
 		match(LexicalType.ID);
 		variMore(t);
 		return t;
-	}
+	};
 
 	const factor = () => {
 		let t = null;
 		switch(current().type){
-			case LexicalType.INTC:
-				t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
-				t.kind = ExpKind.ConstK;
-				t.attr = {
-					type: "Exp",
-					varKind: VarKind.IdV,
-					expType: ExpType.Void,
-				};
-				if (t&&current().type === LexicalType.INTC)
-					t.attr.val = parseInt(current().value);
-				match(LexicalType.INTC);
-				break;
-			case LexicalType.ID:
-				t = variable();
-				break;
-			case LexicalType.LPAREN:
-				match(LexicalType.LPAREN);
-				t = exp();
-				match(LexicalType.RPAREN);
-				break;
-			default:
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-				break;
-			}
+		case LexicalType.INTC:
+			t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
+			t.kind = ExpKind.ConstK;
+			t.attr = {
+				type: "Exp",
+				varKind: VarKind.IdV,
+				expType: ExpType.Void,
+			};
+			if (t&&current().type === LexicalType.INTC)
+				t.attr.val = parseInt(current().value);
+			match(LexicalType.INTC);
+			break;
+		case LexicalType.ID:
+			t = variable();
+			break;
+		case LexicalType.LPAREN:
+			match(LexicalType.LPAREN);
+			t = exp();
+			match(LexicalType.RPAREN);
+			break;
+		default:
+			forward();
+			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			break;
+		}
 		return t;
-	}
+	};
 
 	const term = () => {
-		let t = factor();
+		const t = factor();
 		let p = null;
 		while (current().type === LexicalType.TIMES
 			|| current().type === LexicalType.OVER)
@@ -629,12 +650,12 @@ export default function SyntacticParser(tokens: Token[]) {
 			}
 		}
 		return p;
-	}
+	};
 
 
 	const simpleExp = () => {
 		let t = term();
-		let p = null;
+		const p = null;
 		while (current().type === LexicalType.PLUS
 			|| current().type === LexicalType.MINUS)
 		{
@@ -655,7 +676,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			}
 		}
 		return t;
-	}
+	};
 
 
 	const exp = () => {
@@ -676,11 +697,11 @@ export default function SyntacticParser(tokens: Token[]) {
 				t = node;
 			}
 		}
-	}
+	};
 
 
 	const conditionalStm = () => {
-		let t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
 		t.kind = StmtKind.IfK;
 		match(LexicalType.IF);
 		if (t){
@@ -702,10 +723,10 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		match(LexicalType.FI);
 		return t;
-	}
+	};
 
 	const loopStm = () => {
-		let t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
 		t.kind = StmtKind.WhileK;
 		match(LexicalType.WHILE);
 		if (t){
@@ -719,10 +740,10 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		match(LexicalType.ENDWH);
 		return t;
-	}
+	};
 
 	const inputStm = () => {
-		let t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
 		t.kind = StmtKind.ReadK;
 		match(LexicalType.READ);
 		match(LexicalType.LPAREN);
@@ -732,10 +753,10 @@ export default function SyntacticParser(tokens: Token[]) {
 		match(LexicalType.ID);
 		match(LexicalType.RPAREN);
 		return t;
-	}
+	};
 
 	const outputStm = () => {
-		let t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
 		t.kind = StmtKind.WriteK;
 		match(LexicalType.WRITE);
 		match(LexicalType.LPAREN);
@@ -745,63 +766,63 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		match(LexicalType.RPAREN);
 		return t;
-	}
+	};
 
 	const returnStm = () => {
-		let t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
+		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
 		t.kind = StmtKind.ReturnK;
 		match(LexicalType.RETURN);
 		return t;
-	}
+	};
 
 	const stm = () => {
 		let t = null;
 		switch(current().type){
-			case LexicalType.IF:
-				t = conditionalStm();
-				break;
-			case LexicalType.WHILE:
-				t = loopStm();
-				break;
-			case LexicalType.READ:
-				t = inputStm();
-				break;
-			case LexicalType.WRITE:
-				t = outputStm();
-				break;
-			case LexicalType.RETURN:
-				t = returnStm();
-				break;
-			case LexicalType.ID:
-				//
-				break;
-			default:
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-				break;
-			}
+		case LexicalType.IF:
+			t = conditionalStm();
+			break;
+		case LexicalType.WHILE:
+			t = loopStm();
+			break;
+		case LexicalType.READ:
+			t = inputStm();
+			break;
+		case LexicalType.WRITE:
+			t = outputStm();
+			break;
+		case LexicalType.RETURN:
+			t = returnStm();
+			break;
+		case LexicalType.ID:
+			//
+			break;
+		default:
+			forward();
+			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			break;
+		}
 		return t;
-	}
+	};
 
 	const stmMore = () => {
 		let t= null;
 		switch(current().type){
-			case LexicalType.ELSE:
-			case LexicalType.FI:
-			case LexicalType.ENDWH:
-			case LexicalType.END:
-				break;
-			case LexicalType.SEMI:
-				match(LexicalType.SEMI);
-				t = stmList();
-				break;
-			default:
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-				break;
-			}
+		case LexicalType.ELSE:
+		case LexicalType.FI:
+		case LexicalType.ENDWH:
+		case LexicalType.END:
+			break;
+		case LexicalType.SEMI:
+			match(LexicalType.SEMI);
+			t = stmList();
+			break;
+		default:
+			forward();
+			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			break;
+		}
 		return t;
-	}
+	};
 
 
 	const stmList = () => {
@@ -811,7 +832,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			if (stm_more)
 				node.sibling = stm_more;
 		return node;
-	}
+	};
 
 	const programBody = () => {
 		const node = new SymbolNode(SymbolNodeKind.StmLK, null, [], null, line, []);
@@ -822,11 +843,18 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		match(LexicalType.END);
 		return node;
-	}
+	};
 
 	const program = () => {
 
-		const node = new SymbolNodeCommon(SymbolNodeKind.ProK, null, [], null, line, []);
+		const node: SymbolNodeCommon = {
+			kind: SymbolNodeKind.ProK,
+			line: 0,
+			children: [],
+			names: [],
+			table: undefined
+		};
+
 		const head = programHead();
 		if (!head) {
 			throw new SyntacticError("Program head is missing.");
@@ -836,8 +864,9 @@ export default function SyntacticParser(tokens: Token[]) {
 		const part = declarePart();
 		if (!part) {
 			// declarePart is missing
-		} else
+		} else{
 			node.children.push(part);
+		}
 		const body = programBody();
 		if (!body) {
 			throw new SyntacticError("Program body is missing.");
