@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import LexicalParser from "../lexicon/parser";
 import PROGRAM_BUBBLE from "./bubble.snl?raw";
 import ADD from "./add.snl?raw";
+import SyntacticParser from "../syntax/parser";
 
 test("Lexical Parser", () => {
 	const tokenList = LexicalParser(ADD);
@@ -17,24 +18,10 @@ test("Lexical Parser", () => {
 		"ID", "RPAREN", "END", "DOT",
 		"ENDFILE"
 	]);
-
-	
 });
 
-interface SymbolNode {
-	kind: "string"
-}
-
-interface DecKindNode {
-	kind: "DecK"
-	kindType: string
-}
-
-type aaa = SymbolNode | DecKindNode;
-
 test("Syntactic Parser", () => {
-	let node = {kind:"string"} as aaa;
-	node.kind = "DecK";
-	node = node as DecKindNode;
-	node.kindType = "ArrayK";
+	const tokenList = LexicalParser(ADD);
+	const syntaxTree = SyntacticParser(tokenList);
+	console.dir(syntaxTree, { depth: 15 });
 });
