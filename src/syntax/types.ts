@@ -30,7 +30,8 @@ export enum StmtKinds {
 	ReadK = "ReadK",
 	WriteK = "WriteK",
 	CallK = "CallK",
-	ReturnK = "ReturnK"
+	ReturnK = "ReturnK",
+	StmtK = "StmtK"
 }
 
 export enum ExpKinds {
@@ -87,10 +88,6 @@ export interface SymbolNodeBase{
 export interface SymbolNodeCommon extends SymbolNodeBase{
 	// 标志节点类型中，kind属性为SymbolNodeKind中的几种类型
 	kind: SymbolNodeKind.ProK | SymbolNodeKind.PheadK | SymbolNodeKind.TypeK | SymbolNodeKind.VarK | SymbolNodeKind.ProcDecK | SymbolNodeKind.StmLK;
-	// 当kind为ProcDecK时，attr属性存在
-	attr?: {
-		paramt?: ParamTypes;
-	};
 }
 
 // 具体节点类型：有具体内容
@@ -101,10 +98,12 @@ export type SymbolSpecificNode = SymbolNodeDecK | SymbolNodeStmtK | SymbolNodeEx
 export interface SymbolNodeDecK extends SymbolNodeBase{
 	kind: SymbolNodeKind.DecK;
 	// DecK的子类型由subKind属性区分，有ArrayK, CharK, IntegerK, RecordK, IdK
-	subKind: DecKinds;
+	subKind?: DecKinds;
 	// 当subKind为ArrayK时，attr属性存在，为low, high, childType
 	// 当subKind为IdK时，attr属性存在，为type_name
+	// 当kind为ProcDecK时，attr属性存在，为paramt
 	attr?: {
+		paramt?: ParamTypes;	// 参数类型
 		type_name?: string;	// 记录标识符的类型名
 		low?: number;	// 数组下界
 		high?: number;	//	数组上界
@@ -121,11 +120,16 @@ export interface SymbolNodeStmtK extends SymbolNodeBase{
 // ExpK 的几种子类型由subKind属性区分，对应文档中kind属性
 export interface SymbolNodeExpK extends SymbolNodeBase{
 	kind: SymbolNodeKind.ExpK;
-	subKind: ExpKinds;
+	// ExpK的子类型由subKind属性区分，有OpK, ConstK, VariK
+	subKind?: ExpKinds;
 	attr?: {
+		// op记录语法树节点的运算符类型
 		op?: ExpOp;
+		// val记录数值
 		val?: number;
+		// IdV标识符类型，ArrayMembV数组成员类型，FieldMembV域成员类型
 		varKind?: VarKinds;
+		// type表示类型检查类型
 		type?: ExpTypes;
 	};
 }
