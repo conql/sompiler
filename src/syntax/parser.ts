@@ -1,6 +1,6 @@
-import { s } from "vitest/dist/reporters-MmQN-57K.js";
+import { S, s } from "vitest/dist/reporters-MmQN-57K.js";
 import { LexicalType, Token } from "../lexicon/types";
-import { SymbolNode, SymbolNodeCommon, SymbolSpecificNode, SymbolNodeKind, DecKinds, StmtKinds, ExpKinds, VarKinds, ExpTypes, SymbolNodeDecK } from "./types";
+import { ParamTypes,SymbolNode, SymbolNodeCommon, SymbolSpecificNode, SymbolNodeKind, DecKinds, StmtKinds, ExpKinds, VarKinds, ExpTypes, SymbolNodeDecK, SymbolNodeStmtK, SymbolNodeExpK } from "./types";
 
 
 
@@ -8,6 +8,7 @@ export default function SyntacticParser(tokens: Token[]) {
 	let tokenPointer = 0;
 	let line = 1;
 
+	// 读取下一个token
 	const forward = () => {
 		tokenPointer++;
 		if (tokenPointer >= tokens.length) {
@@ -17,6 +18,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return current();
 	};
 
+	// 匹配当前token，并且返回下一个token
 	const match = (type: LexicalType) => {
 		if (current().type !== type) {
 			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
@@ -24,12 +26,20 @@ export default function SyntacticParser(tokens: Token[]) {
 		return forward();
 	};
 
+	// 返回当前token
 	const current = () => {
 		return tokens[tokenPointer];
 	};
 
 
+/********************************************************************/
+/* 函数名 programHead											    */
+/* 功  能 程序头的处理函数								        	*/
+/* 产生式 < programHead > ::= PROGRAM  ProgramName                  */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const programHead = () => {
+		// 创建一个程序头节点
 		const node: SymbolNodeCommon = {
 			kind: SymbolNodeKind.PheadK,
 			line,
@@ -37,24 +47,34 @@ export default function SyntacticParser(tokens: Token[]) {
 			names: [],
 			table: undefined
 		};
+
 		match(LexicalType.PROGRAM);
 		if (current().type === LexicalType.ID) {
 			node.line = 0;
+			// 复制程序名
 			node.names.push(current().value);
 		}
+
 		match(LexicalType.ID);
 		return node;
 	};
 
-	const baseType = (node: SymbolNode) => {
+
+/********************************************************************/
+/* 函数名 baseType		 							  	            */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < baseType > ::=  INTEGER | CHAR                          */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const baseType = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.INTEGER) {
 			match(LexicalType.INTEGER);
-			node.kind = DecKinds.IntegerK;
+			node.subKind = DecKinds.IntegerK;
 			return;
 		}
 		else if (current().type === LexicalType.CHAR) {
 			match(LexicalType.CHAR);
-			node.kind = DecKinds.CharK;
+			node.subKind = DecKinds.CharK;
 			return;
 		}
 		else {
@@ -64,28 +84,48 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-	const arrayType = (node: SymbolNode) => {
+/********************************************************************/
+/* 函数名 arrayType		 							                */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < arrayType > ::=  ARRAY [low..top] OF baseType           */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const arrayType = (node: SymbolNodeDecK) => {
+		node.attr = {}; // Initialize node.attr object
+		
 		match(LexicalType.ARRAY);
 		match(LexicalType.LMIDPAREN);
+
 		if (current().type === LexicalType.INTC) {
-			node.attr = {
-				type: "Array",
-				lower: parseInt(current().value),
-			};
+			node.attr.low = parseInt(current().value);
 		}
 		match(LexicalType.INTC);
 		match(LexicalType.UNDERANGE);
+
 		if (current().type === LexicalType.INTC) {
-			node.attr.upper = parseInt(current().value);
+			node.attr.high = parseInt(current().value);
 		}
+
 		match(LexicalType.INTC);
 		match(LexicalType.RMIDPAREN);
 		match(LexicalType.OF);
+		
+		// 这里的操作是，先调用baseType函数，得到baseType的属性存放在node.subKind中
+		// 然后再赋值给node.attr.childType
 		baseType(node);
-		node.attr.childType = node.kind;
-		node.kind = DecKinds.ArrayK;
+		node.attr.childType = node.subKind;
+		node.subKind = DecKinds.ArrayK;
+		
+
 	};
 
+
+/********************************************************************/
+/* 函数名 fieldDecMore		 							            */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < fieldDecMore > ::=  ε | fieldDecList                   */ 
+/*说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点   */
+/********************************************************************/
 	const fieldDecMore = () => {
 		if (current().type === LexicalType.END)
 			return null;
@@ -102,14 +142,31 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
+
+/********************************************************************/
+/* 函数名 fieldDecList		 							            */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < fieldDecList > ::=   baseType idList ; fieldDecMore     */
+/*                             | arrayType idList; fieldDecMore     */ 
+/*说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点   */
+/********************************************************************/
 	const fieldDecList = () => {
-		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
+		let node : SymbolNodeDecK = {
+			kind: SymbolNodeKind.DecK,
+			line,
+			children: [],
+			names: [],
+			table: undefined
+			// subKind 在下面确定
+		};
+
 		let fieldDecMore_ = null;
 		if (node){
 			if (current().type === LexicalType.INTEGER
 			|| current().type === LexicalType.CHAR
 			){
 				baseType(node);
+				// 把当前的标识符放到names数组中
 				node.names.push(current().value);
 				match(LexicalType.ID);
 				match(LexicalType.SEMI);
@@ -127,31 +184,46 @@ export default function SyntacticParser(tokens: Token[]) {
 				forward();
 				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			}
-			node.sibling = fieldDecMore_;
+			
+			if (fieldDecMore_)
+				node.sibling = fieldDecMore_;
+
 		}
 		return node;
 	};
 
-	const recType = (node: SymbolNode) => {
+
+/********************************************************************/
+/* 函数名 recType		 							                */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < recType > ::=  RECORD fieldDecList END                  */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const recType = (node: SymbolNodeDecK) => {
 		match(LexicalType.RECORD);
-		const fieldDecList_ = fieldDecList();
+		let fieldDecList_ = fieldDecList();
 		if (fieldDecList_) {
 			node.children.push(fieldDecList_);
 		}
 		else
-			throw new SyntaxError("a record body is missing.");
+			SyntaxError("a record body is missing.");
 		match(LexicalType.END);
-		node.kind = DecKind.RecordK;
+		node.subKind = DecKinds.RecordK;
 	};
 
-	const structureType = (node: SymbolNode) => {
+
+/********************************************************************/
+/* 函数名 structureType		 							            */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < structureType > ::=  arrayType | recType                */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const structureType = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.ARRAY) {
-			node.kind = DecKind.ArrayK;
 			arrayType(node);
 			return;
 		}
 		if (current().type === LexicalType.RECORD) {
-			node.kind = DecKind.RecordK;
 			recType(node);
 			return;
 		}
@@ -160,6 +232,12 @@ export default function SyntacticParser(tokens: Token[]) {
 		return null;
 	};
 
+/********************************************************************/
+/* 函数名 typeDecMore		 							            */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < typeDecMore > ::=    ε | TypeDecList                   */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const typeDecMore = () => {
 		if (current().type === LexicalType.VAR
 			|| current().type === LexicalType.PROCEDURE
@@ -175,22 +253,32 @@ export default function SyntacticParser(tokens: Token[]) {
 		return null;
 	};
 
-	const typeName = (node: SymbolNode): void => {
+
+/********************************************************************/
+/* 函数名 typeName		 							  	            */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < typeName > ::= baseType | structureType | id            */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const typeName = (node: SymbolNodeDecK): void => {
 		if (
 			current().type === LexicalType.INTEGER ||
 			current().type === LexicalType.CHAR
 		) {
 			baseType(node);
-		} else if (
+		}
+		else if (
 			current().type === LexicalType.ARRAY ||
 			current().type === LexicalType.RECORD
 		) {
 			structureType(node);
-		} else if (current().type === LexicalType.ID) {
-			node.kind = DecKind.Idk;
+		} 
+		else if (current().type === LexicalType.ID) {
+			// 该节点的子类型为IdK
+			node.subKind = DecKinds.IdK;
+			// 属性为type_name，记录标识符的类型名
 			node.attr = {
-				type: "Type",
-				name: current().value,
+				type_name: current().value
 			};
 			match(LexicalType.ID);
 		} else {
@@ -201,16 +289,35 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
+
+/********************************************************************/
+/* 函数名 TypeDecList		 							  	        */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < TypeDecList > ::= typeId = typeName ; typeDecMore       */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const typeDecList = () => {
-		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
+		// 具体节点，SybolNodeDecK类型，表示一个具体的声明
+		const node : SymbolNodeDecK = {
+			kind: SymbolNodeKind.DecK,
+			line,
+			children: [],
+			names: [],
+			table: undefined,
+			// subkind 在下面确定			
+		};
+
 		if (node) {
-			//typeId
+
+			//typeId放到names数组中
 			if (current().type === LexicalType.ID)
 				node.names.push(current().value);
+
 			match(LexicalType.ID);
 
 			match(LexicalType.EQ);
 
+			// subkind 在typeName函数中确定
 			typeName(node);
 
 			match(LexicalType.SEMI);
@@ -223,15 +330,32 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
+
+/********************************************************************/
+/* 函数名 TypeDeclaration									  	    */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < TypeDeclaration > ::= TYPE  TypeDecList                 */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const typeDeclaration = () => {
 		match(LexicalType.TYPE);
 		const node = typeDecList();
 		if (!node) {
-			throw new SyntaxError("Type declaration list is missing.");
+			SyntaxError("Type declaration list is missing.");
 		}
 		return node;
 	};
 
+
+
+/**************************类型声明部分******************************/
+
+/********************************************************************/
+/* 函数名 typeDec									     		    */
+/* 功  能 类型声明部分的处理函数						        	*/
+/* 产生式 < typeDec > ::= ε | TypeDeclaration                      */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const typeDec = () => {
 		if (current().type === LexicalType.TYPE)
 		{
@@ -242,13 +366,20 @@ export default function SyntacticParser(tokens: Token[]) {
 			|| current().type === LexicalType.BEGIN
 		)
 			return null;
+
 		forward();
-		// print syntaxerror
 		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
 	};
 
-	const varIdMore = (node :SymbolNode) => {
+
+/********************************************************************/
+/* 函数名 varIdMore		 						                    */
+/* 功  能 变量声明部分的处理函数						        	*/
+/* 产生式 < varIdMore > ::=  ε |  , varIdList                      */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/  
+	const varIdMore = (node :SymbolNodeDecK) => {
 		if (current().type === LexicalType.SEMI)
 			return;
 		else if (current().type === LexicalType.COMMA)
@@ -264,7 +395,13 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
-	const varIdList = (node: SymbolNode) => {
+/********************************************************************/
+/* 函数名 varIdList		 						                    */
+/* 功  能 变量声明部分的处理函数						        	*/
+/* 产生式 < varIdList > ::=  id  varIdMore                          */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const varIdList = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.ID) {
 			node.names.push(current().value);
 			match(LexicalType.ID);
@@ -276,6 +413,13 @@ export default function SyntacticParser(tokens: Token[]) {
 		varIdMore(node);
 	};
 
+
+/********************************************************************/
+/* 函数名 varDecMore		 						                */
+/* 功  能 变量声明部分的处理函数						        	*/
+/* 产生式 < varDecMore > ::=  ε |  varDecList                      */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const varDecMore = () => {
 		let node = null;
 		if (current().type === LexicalType.PROCEDURE
@@ -297,8 +441,22 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
+
+/********************************************************************/
+/* 函数名 varDecList		 						                */
+/* 功  能 变量声明部分的处理函数						        	*/
+/* 产生式 < varDecList > ::=  typeName varIdList; varDecMore        */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const varDecList = () => {
-		const node = new SymbolNode(SymbolNodeKind.DecK, null, [], null, line, []);
+		let node: SymbolNodeDecK = {
+			kind: SymbolNodeKind.DecK,
+			line,
+			children: [],
+			names: [],
+			table: undefined,
+			// subKind 在下面确定
+		};
 		let p = null;
 		if (node) {
 			typeName(node);
@@ -310,15 +468,31 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
+
+/********************************************************************/
+/* 函数名 varDeclaration		 						            */
+/* 功  能 变量声明部分的处理函数						        	*/
+/* 产生式 < varDeclaration > ::=  VAR  varDecList                   */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const varDeclaration = () => {
 		match(LexicalType.VAR);
 		const node = varDecList();
 		if (!node) {
-			throw new SyntaxError("Variable declaration list is missing.");
+			SyntaxError("Variable declaration list is missing.");
 		}
 		return node;
 	};
 
+
+/**************************变量声明部分******************************/
+
+/********************************************************************/
+/* 函数名 varDec		 						     	            */
+/* 功  能 变量声明部分的处理函数						        	*/
+/* 产生式 < varDec > ::=  ε |  varDeclaration                      */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const varDec = () => {
 		if (current().type === LexicalType.PROCEDURE
 		|| current().type === LexicalType.BEGIN
@@ -335,8 +509,15 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
+
+/********************************************************************/
+/* 函数名 declarePart											    */
+/* 功  能 声明部分的处理函数								     	*/
+/* 产生式 < declarePart > ::= 类型声明-typeDec  变量声明-varDec  过程声明-procDec              */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const declarePart = () => {
-		// 类型
+		// 类型声明
 		let typeP: SymbolNodeCommon = {
 			kind: SymbolNodeKind.TypeK,
 			line: line,
@@ -352,10 +533,10 @@ export default function SyntacticParser(tokens: Token[]) {
 				typeP.children.push(tp1);
 		}
 
-		// 变量
-		const varP: SymbolNodeCommon = {
-			kind: SymbolNodeKind.ProK,
-			line: 0,
+		// 变量声明
+		let varP: SymbolNodeCommon = {
+			kind: SymbolNodeKind.VarK,
+			line,
 			children: [],
 			names: [],
 			table: undefined
@@ -367,86 +548,8 @@ export default function SyntacticParser(tokens: Token[]) {
 				varP.children.push(tp2);	
 		}
 
-		const paramList = (node: SymbolNode) => {
-			if (current().type === LexicalType.RPAREN)
-				return;
-			else if (current().type === LexicalType.INTEGER
-			|| current().type === LexicalType.CHAR
-			|| current().type === LexicalType.ARRAY
-			|| current().type === LexicalType.RECORD
-			|| current().type === LexicalType.ID
-			|| current().type === LexicalType.VAR)
-			{
-				const p = varDecList();
-				node.children.push(p);
-			}
-			else {
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-			}
-		};
-
-		const programBody = () => {
-			const node = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
-			match(LexicalType.BEGIN);
-			if (node){
-				const p = stmList();
-				node.children.push(p);
-			}
-			match(LexicalType.END);
-			return node;
-		};
-
-		const procBody = () => {
-			const node = programBody();
-			if (!node) {
-				throw new SyntaxError("Procedure body is missing.");
-			}
-			return node;
-		};
-
-		const procDecPart = () => {
-			return declarePart();
-		};
-
-		const procDeclaration = () => {
-			const node = new SymbolNode(SymbolNodeKind.ProcDecK, null, [], null, line, []);
-			match(LexicalType.PROCEDURE);
-			if (node)
-			{
-				if (current().type === LexicalType.ID)
-				{
-					node.names.push(current().value);
-					match(LexicalType.ID);
-				}
-				match(LexicalType.LPAREN);
-				paramList(node);
-				match(LexicalType.RPAREN);
-				match(LexicalType.SEMI);
-				const p1 = procDecPart();
-				const p2 = procBody();
-				node.children.push(p1);
-				node.children.push(p2);
-				node.sibling = procDec();
-			}
-			return node;
-		};
-
-		const procDec = () => {
-			if (current().type === LexicalType.BEGIN)
-				return null;
-			else if (current().type === LexicalType.PROCEDURE)
-				return procDeclaration();
-			else {
-				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
-			}
-			return null;
-		};
-
-
 		// 过程或函数
-		const procP = procDec();
+		let procP = procDec();
 		
 		if (typeP.children)
 			if (varP.children)
@@ -477,6 +580,277 @@ export default function SyntacticParser(tokens: Token[]) {
 			}
 		return typeP;
 	};
+
+/********************************************************************/
+/* 函数名 fidMore		 			    	                        */
+/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+/* 产生式 < fidMore > ::=   ε |  , formList                        */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const fidMore = (node: SymbolNodeDecK) => {
+			if (current().type === LexicalType.SEMI
+			|| current().type === LexicalType.RPAREN)
+				return;
+			else if (current().type === LexicalType.COMMA)
+			{
+				match(LexicalType.COMMA);
+				formList(node);
+				return;
+			}
+			else {
+				forward();
+				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			}
+		}
+
+/********************************************************************/
+/* 函数名 formList		 			    	                        */
+/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+/* 产生式 < formList > ::=  id  fidMore                             */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const formList = (node: SymbolNodeDecK) => {
+			if (current().type === LexicalType.ID) {
+				node.names.push(current().value);
+				match(LexicalType.ID);
+			}
+			else {
+				forward();
+				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			}
+			fidMore(node);
+		}
+	
+/********************************************************************/
+/* 函数名 param		 			    	                            */
+/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+/* 产生式 < param > ::=  typeName formList | VAR typeName formList  */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const param = () => {
+			let node : SymbolNodeDecK = {
+				kind: SymbolNodeKind.DecK,
+				line,
+				children: [],
+				names: [],
+				table: undefined,
+				// subKind 在下面确定
+			};
+			if (current().type === LexicalType.INTEGER
+			|| current().type === LexicalType.CHAR
+			|| current().type === LexicalType.ARRAY
+			|| current().type === LexicalType.RECORD
+			|| current().type === LexicalType.ID)
+			{
+				node.attr = {};
+				// 值参 形参
+				node.attr.paramt = ParamTypes.ValueParamType;
+				typeName(node);
+				formList(node);
+			}
+			else if (current().type === LexicalType.VAR)
+			{
+				match(LexicalType.VAR);
+				node.attr = {}
+				// 变参 形参
+				node.attr.paramt = ParamTypes.VarParamType;
+				typeName(node);
+				formList(node);
+			}
+			else {
+				forward();
+				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			}
+			return node;
+		}
+
+
+/********************************************************************/
+/* 函数名 paramMore		 			    	                        */
+/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+/* 产生式 < paramMore > ::=  ε | ; paramDecList                     */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const paramMore = () => {
+			if (current().type === LexicalType.RPAREN)
+				return null;
+			else if (current().type === LexicalType.SEMI)
+			{
+				match(LexicalType.SEMI);
+				let t = paramDecList();
+				if (t)
+					return t;
+				else
+					SyntaxError("a param declaration is missing.");
+			}
+			else {
+				forward();
+				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+				return null;
+			}
+		}
+
+		
+/********************************************************************/
+/* 函数名 paramDecList		 			    	                    */
+/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+/* 产生式 < paramDecList > ::=  param  paramMore                    */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/	
+		const paramDecList = () => {
+			let t = param();
+			let p = paramMore();
+			if (p)
+				t.sibling = p;
+			return t;
+		};
+
+
+		
+/********************************************************************/
+/* 函数名 paramList		 						                    */
+/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+/* 产生式 < paramList > ::=  ε |  paramDecList                     */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const paramList = (node: SymbolNode) => {
+			if (current().type === LexicalType.RPAREN)
+				return;
+			else if (current().type === LexicalType.INTEGER
+			|| current().type === LexicalType.CHAR
+			|| current().type === LexicalType.ARRAY
+			|| current().type === LexicalType.RECORD
+			|| current().type === LexicalType.ID
+			|| current().type === LexicalType.VAR)
+			{
+				let p = paramDecList();
+				node.children.push(p);
+			}
+			else {
+				forward();
+				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			}
+		};
+
+
+/********************************************************************/
+/* 函数名 programBody		 			  	                        */
+/* 功  能 程序体部分的处理函数	                    	        	*/
+/* 产生式 < programBody > ::=  BEGIN  stmList   END                 */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const programBody = () => {
+			let node : SymbolNodeCommon = {
+				kind: SymbolNodeKind.StmLK,
+				line,
+				children: [],
+				names: [],
+				table: undefined
+			};
+			match(LexicalType.BEGIN);
+			if (node){
+				// why?
+				node.line = 0;
+				const p = stmList();
+				node.children.push(p);
+			}
+			match(LexicalType.END);
+			return node;
+		};
+
+
+/********************************************************************/
+/* 函数名 procBody		 			  	                            */
+/* 功  能 函数体部分的处理函数	                    	        	*/
+/* 产生式 < procBody > ::=  programBody                             */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const procBody = () => {
+			const node = programBody();
+			if (!node) {
+				SyntaxError("Procedure body is missing.");
+			}
+			return node;
+		};
+
+/********************************************************************/
+/* 函数名 procDecPart		 			  	                        */
+/* 功  能 函数中的声明部分的处理函数	             	        	*/
+/* 产生式 < procDecPart > ::=  declarePart                          */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const procDecPart = () => {
+			return declarePart();
+		};
+
+
+/********************************************************************/
+/* 函数名 procDeclaration		 						            */
+/* 功  能 函数声明部分的处理函数						        	*/
+/* 产生式 < procDeclaration > ::=  PROCEDURE                        */
+/*                                 ProcName(paramList);             */
+/*                                 procDecPart                      */
+/*                                 procBody                         */
+/*                                 procDec                          */
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/*        函数的根节点用于记录该函数的名字；第一个子节点指向参数节  */
+/*        点，第二个节点指向函数中的声明部分节点；第三个节点指向函  */
+/*        数体。
+/********************************************************************/
+		const procDeclaration = () => {
+			let node : SymbolNodeCommon = {
+				kind: SymbolNodeKind.ProcDecK,
+				line,
+				children: [],
+				names: [],
+				table: undefined,
+			};
+			match(LexicalType.PROCEDURE);
+			if (node)
+			{
+				if (current().type === LexicalType.ID)
+				{
+					// 复制过程名
+					node.names.push(current().value);
+					match(LexicalType.ID);
+				}
+				match(LexicalType.LPAREN);
+				paramList(node);
+				match(LexicalType.RPAREN);
+				match(LexicalType.SEMI);
+				const p1 = procDecPart();
+				const p2 = procBody();
+				const p3 = procDec();
+				if (p1)
+					node.children.push(p1);
+				if (p2)
+					node.children.push(p2);
+				if (p3)
+					node.sibling = p3;
+			}
+			return node;
+		};
+
+
+/********************************************************************/
+/* 函数名 procDec		 						                    */
+/* 功  能 函数声明部分的处理函数						        	*/
+/* 产生式 < procDec > ::=  ε |  procDeclaration                    */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+		const procDec = () => {
+			if (current().type === LexicalType.BEGIN)
+				return null;
+			else if (current().type === LexicalType.PROCEDURE)
+				return procDeclaration();
+			else {
+				forward();
+				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			}
+			return null;
+		};
+
+
 
 	const fieldVarMore = (node: SymbolNode) => {
 		switch(current().type){
@@ -582,44 +956,77 @@ export default function SyntacticParser(tokens: Token[]) {
 		}	
 	};
 
+/********************************************************************/
+/* 函数名 variable													*/
+/* 功  能 变量处理函数												*/
+/* 产生式 variable   ::=   id variMore                   			*/
+/* 说  明 该函数根据产生式,	处理变量，生成其语法树节点              */
+/********************************************************************/
 	const variable = () => {
-		const t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
-		t.kind = ExpKind.VariK;
-		t.attr = {
-			type: "Exp",
-			varKind: VarKind.IdV,
-			expType: ExpType.Void,
+		let t : SymbolNodeExpK = {
+			kind: SymbolNodeKind.ExpK,
+			line,
+			children: [],
+			names: [],
+			table: undefined,
+			// 子类型为变量类型
+			subKind: ExpKinds.VariK,
+			attr: {
+				varKind: VarKinds.IdV,
+				type: ExpTypes.Void
+			}
 		};
+
 		if (t&&current().type === LexicalType.ID)
 			t.names.push(current().value);
+		
 		match(LexicalType.ID);
 		variMore(t);
 		return t;
 	};
 
+
+/****************************************************************************/
+/* 函数名 factor															*/
+/* 功  能 因子处理函数														*/
+/* 产生式 factor ::= ( exp ) | INTC | variable                  			*/
+/* 说  明 该函数根据产生式调用相应的递归处理函数,生成表达式类型语法树节点	*/
+/****************************************************************************/
 	const factor = () => {
-		let t = null;
+		let t : SymbolNodeExpK | null;
 		switch(current().type){
 		case LexicalType.INTC:
-			t = new SymbolNode(SymbolNodeKind.ExpK, null, [], null, line, []);
-			t.kind = ExpKind.ConstK;
-			t.attr = {
-				type: "Exp",
-				varKind: VarKind.IdV,
-				expType: ExpType.Void,
+			// 创建ConstK表达式类型的语法树节点
+			t  = {
+				kind: SymbolNodeKind.ExpK,
+				line,
+				children: [],
+				names: [],
+				table: undefined,
+				subKind : ExpKinds.ConstK
 			};
+			// 这部分初始化代同newExpNode
+			t.attr = {
+				varKind: VarKinds.IdV,
+				type: ExpTypes.Void,
+			}
+
 			if (t&&current().type === LexicalType.INTC)
 				t.attr.val = parseInt(current().value);
 			match(LexicalType.INTC);
 			break;
+
 		case LexicalType.ID:
+			// 创建IdK表达式类型的语法树节点
 			t = variable();
 			break;
+
 		case LexicalType.LPAREN:
 			match(LexicalType.LPAREN);
 			t = exp();
 			match(LexicalType.RPAREN);
 			break;
+
 		default:
 			forward();
 			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
@@ -628,8 +1035,15 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
+
+/****************************************************************************/
+/* 函数名 term																*/
+/* 功  能 项处理函数														*/
+/* 产生式 < 项 > ::= < 因子 > { < 乘法运算符 > < 因子 > }					*/
+/* 说  明 该函数根据产生式调用相应递归处理函数,生成表达式类型语法树节点		*/
+/****************************************************************************/
 	const term = () => {
-		const t = factor();
+		let t = factor();
 		let p = null;
 		while (current().type === LexicalType.TIMES
 			|| current().type === LexicalType.OVER)
@@ -653,6 +1067,12 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
+/************************************************************************/
+/* 函数名 simple_exp													*/
+/* 功  能 简单表达式处理函数											*/
+/* 产生式 < 简单表达式 >::=	< 项 > { < 加法运算符 > < 项 > }			*/
+/* 说  明 该函数根据产生式调用相应递归处理函数,生成表达式类型语法树节点	*/
+/************************************************************************/
 	const simpleExp = () => {
 		let t = term();
 		const p = null;
@@ -679,6 +1099,12 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
+/****************************************************************************/
+/* 函数名 exp																*/
+/* 功  能 表达式处理函数													*/
+/* 产生式 < 表达式 > ::= < 简单表达式 > [< 关系运算符 > < 简单表达式 > ]	*/
+/* 说  明 该函数根据产生式调用相应递归处理函数,生成表达式类型语法树节点		*/
+/****************************************************************************/
 	const exp = () => {
 		let t = simpleExp();
 		if (current().type === LexicalType.LT
@@ -702,7 +1128,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	const conditionalStm = () => {
 		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
-		t.kind = StmtKind.IfK;
+		t.kind = StmtKinds.IfK;
 		match(LexicalType.IF);
 		if (t){
 			const p1 = exp();
@@ -727,7 +1153,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	const loopStm = () => {
 		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
-		t.kind = StmtKind.WhileK;
+		t.kind = StmtKinds.WhileK;
 		match(LexicalType.WHILE);
 		if (t){
 			const p1 = exp();
@@ -744,7 +1170,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	const inputStm = () => {
 		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
-		t.kind = StmtKind.ReadK;
+		t.kind = StmtKinds.ReadK;
 		match(LexicalType.READ);
 		match(LexicalType.LPAREN);
 		if (t&& current().type === LexicalType.ID){
@@ -757,7 +1183,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	const outputStm = () => {
 		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
-		t.kind = StmtKind.WriteK;
+		t.kind = StmtKinds.WriteK;
 		match(LexicalType.WRITE);
 		match(LexicalType.LPAREN);
 		if (t){
@@ -770,11 +1196,92 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	const returnStm = () => {
 		const t = new SymbolNode(SymbolNodeKind.StmtK, null, [], null, line, []);
-		t.kind = StmtKind.ReturnK;
+		t.kind = StmtKinds.ReturnK;
 		match(LexicalType.RETURN);
 		return t;
 	};
 
+/********************************************************************/
+/* 函数名 assignmentRest		 			                        */
+/* 功  能 赋值语句部分的处理函数	                    	        */
+/* 产生式 < assignmentRest > ::=  variMore : = exp                  */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const assignmentRest = (temp_name : string) => {
+		// 一个具体节点，statement节点
+		let t : SymbolNodeStmtK = {
+			kind: SymbolNodeKind.StmtK,
+			line,
+			children: [],
+			names: [],
+			table: undefined,
+			// 小类为赋值语句
+			subKind : StmtKinds.AssignK
+		};
+		if (t) {
+			// 第一个子节点，表达式-变量节点
+			let child1 : SymbolNodeExpK = {
+				kind: SymbolNodeKind.ExpK,
+				line,
+				children: [],
+				names: [],
+				table: undefined,
+				// 小类为变量
+				subKind: ExpKinds.VariK
+			};
+			if (child1){
+				child1.names.push(temp_name);
+				variMore(child1);
+				t.children.push(child1);
+			}
+			// 匹配赋值符号
+			match(LexicalType.ASSIGN);
+			// 第二个子节点，表达式节点
+			let child2 = exp();
+			t.children.push(child2);
+		}
+
+	};
+
+
+/********************************************************************/
+/* 函数名 assCall		 			  	                            */
+/* 功  能 语句部分的处理函数	                    	        	*/
+/* 产生式 < assCall > ::=   assignmentRest   { :=,LMIDPAREN,DOT }     */
+/*                        | callStmRest      { ( }                    */  
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
+	const assCall = (temp_name : string) => {
+		let t = null;
+		switch(current().type){
+		case LexicalType.ASSIGN:
+		case LexicalType.LMIDPAREN:
+		case LexicalType.DOT:
+			t = assignmentRest(temp_name);
+			break;
+		case LexicalType.LPAREN:
+			t = callStmRest();
+			break;
+		default:
+			forward();
+			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			break;
+		}
+		return t;
+	}
+
+
+/********************************************************************/
+/* 函数名 stm   		 			  	                            */
+/* 功  能 语句部分的处理函数	                    	        	*/
+/* 产生式 < stm > ::=   conditionalStm   {IF}                       */
+/*                    | loopStm          {WHILE}                    */
+/*                    | inputStm         {READ}                     */
+/*                    | outputStm        {WRITE}                    */
+/*                    | returnStm        {RETURN}                   */
+/*                    | id  assCall      {id}                       */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const stm = () => {
 		let t = null;
 		switch(current().type){
@@ -794,7 +1301,9 @@ export default function SyntacticParser(tokens: Token[]) {
 			t = returnStm();
 			break;
 		case LexicalType.ID:
-			//
+			let temp_name = current().value;
+			match(LexicalType.ID);
+			t = assCall(temp_name);
 			break;
 		default:
 			forward();
@@ -825,6 +1334,12 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
+/********************************************************************/
+/* 函数名 stmList		 			  	                            */
+/* 功  能 语句部分的处理函数	                    	        	*/
+/* 产生式 < stmList > ::=  stm    stmMore                           */ 
+/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
+/********************************************************************/
 	const stmList = () => {
 		const node = stm();
 		const stm_more = stmMore();
@@ -834,22 +1349,12 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-	const programBody = () => {
-		const node = new SymbolNode(SymbolNodeKind.StmLK, null, [], null, line, []);
-		match(LexicalType.BEGIN);
-		if (node){
-			const p = stmList();
-			node.children.push(p);
-		}
-		match(LexicalType.END);
-		return node;
-	};
-
 	const program = () => {
 
-		const node: SymbolNodeCommon = {
+		const root: SymbolNodeCommon = {
 			kind: SymbolNodeKind.ProK,
-			line: 0,
+			// "line," 表示属性和值名称相同
+			line,
 			children: [],
 			names: [],
 			table: undefined
@@ -859,22 +1364,24 @@ export default function SyntacticParser(tokens: Token[]) {
 		if (!head) {
 			throw new SyntacticError("Program head is missing.");
 		} else
-			node.children.push(head);
+			root.children.push(head);
 
 		const part = declarePart();
 		if (!part) {
 			// declarePart is missing
+			// but it's not an error
 		} else{
-			node.children.push(part);
+			root.children.push(part);
 		}
 		const body = programBody();
 		if (!body) {
 			throw new SyntacticError("Program body is missing.");
 		} else
-			node.children.push(body);
+			root.children.push(body);
 
 		match(LexicalType.DOT);
-		return node;
+
+		return root;
 	};
 
 	const root = program();

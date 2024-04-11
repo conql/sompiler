@@ -97,12 +97,15 @@ export interface SymbolNodeCommon extends SymbolNodeBase{
 // 由 DecK, StmtK, ExpK 几种组成
 export type SymbolSpecificNode = SymbolNodeDecK | SymbolNodeStmtK | SymbolNodeExpK;
 
+// 具体节点-声明节点
 export interface SymbolNodeDecK extends SymbolNodeBase{
 	kind: SymbolNodeKind.DecK;
 	// DecK的子类型由subKind属性区分，有ArrayK, CharK, IntegerK, RecordK, IdK
 	subKind: DecKinds;
-	// 当subKind为ArrayK时，attr属性存在
+	// 当subKind为ArrayK时，attr属性存在，为low, high, childType
+	// 当subKind为IdK时，attr属性存在，为type_name
 	attr?: {
+		type_name?: string;	// 记录标识符的类型名
 		low?: number;	// 数组下界
 		high?: number;	//	数组上界
 		childType?: DecKinds;	// 记录数组的成员类型
