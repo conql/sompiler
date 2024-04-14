@@ -10,6 +10,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "element-plus": "^2.7.0",
     "sompiler": "link:",
     "vue": "^3.4.19"
   },

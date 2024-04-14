@@ -1,0 +1,35 @@
+ProK 
+    PheadK p 
+    TypeK 
+        DecK IntegerK t1 
+    VarK 
+        DecK IntegerK v1 v2 
+    ProcDecK q 
+        DecK value param:IntegerK i 
+        VarK 
+            DecK IntegerK a 
+        StmLk 
+            StmtK Assign 
+                ExpK a IdV 
+                ExpK i IdV 
+            StmtK Write 
+                ExpK a IdV 
+    StmLk 
+        StmtK Read v1 
+        StmtK If 
+            ExpK Op < 
+                ExpK v1 IdV 
+                ExpK Const 10 
+            StmtK Assign 
+                ExpK v1 IdV 
+                ExpK Op + 
+                    ExpK v1 IdV 
+                    ExpK Const 10 
+            StmtK Assign 
+                ExpK v1 IdV 
+                ExpK Op - 
+                    ExpK v1 IdV 
+                    ExpK Const 10 
+        StmtK Call 
+            ExpK q IdV 
+            ExpK v1 IdV 
