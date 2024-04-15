@@ -1,4 +1,5 @@
 import { LexicalType } from "../lexicon/types";
+import { SemanticTableItem } from "../semantics/types";
 
 // 语法树节点类型
 export enum SymbolNodeKind {
@@ -80,7 +81,7 @@ export interface SymbolNodeBase{
 	sibling?: SymbolNode; //节点的兄弟节点
 	kind: unknown; //节点的主要类型，对应文档中nodeKind属性，为SymbolNodeKind类型，目前设置为unknown，以便后续区分定义
 	names: string[]; //数组成员是节点中的标志符的名字
-	table: unknown; //节点中的各个标志符在符号表中的入口，没看懂怎么定义，先设置为unknown
+	table: SemanticTableItem[]; //节点中的各个标志符在符号表中的入口
 }
 
 // 标志节点类型：无具体内容，只有kind属性
@@ -98,7 +99,7 @@ export type SymbolSpecificNode = SymbolNodeDecK | SymbolNodeStmtK | SymbolNodeEx
 export interface SymbolNodeDecK extends SymbolNodeBase{
 	kind: SymbolNodeKind.DecK;
 	// DecK的子类型由subKind属性区分，有ArrayK, CharK, IntegerK, RecordK, IdK
-	subKind?: DecKinds;
+	subKind: DecKinds;
 	// 当subKind为ArrayK时，attr属性存在，为low, high, childType
 	// 当subKind为IdK时，attr属性存在，为type_name
 	// 当kind为ProcDecK时，attr属性存在，为paramt
@@ -121,8 +122,8 @@ export interface SymbolNodeStmtK extends SymbolNodeBase{
 export interface SymbolNodeExpK extends SymbolNodeBase{
 	kind: SymbolNodeKind.ExpK;
 	// ExpK的子类型由subKind属性区分，有OpK, ConstK, VariK
-	subKind?: ExpKinds;
-	attr?: {
+	subKind: ExpKinds;
+	attr: {
 		// op记录语法树节点的运算符类型
 		op?: ExpOp;
 		// val记录数值

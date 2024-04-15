@@ -1,4 +1,3 @@
-import { S, s } from "vitest/dist/reporters-MmQN-57K.js";
 import { LexicalType, Token } from "../lexicon/types";
 import { ExpOp,ParamTypes,SymbolNode, SymbolNodeCommon, SymbolSpecificNode, SymbolNodeKind, DecKinds, StmtKinds, ExpKinds, VarKinds, ExpTypes, SymbolNodeDecK, SymbolNodeStmtK, SymbolNodeExpK } from "./types";
 
@@ -45,7 +44,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined
+			table: []
 		};
 
 		match(LexicalType.PROGRAM);
@@ -156,9 +155,9 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined
+			table: []
 			// subKind 在下面确定
-		};
+		} as unknown as SymbolNodeDecK;
 
 		let fieldDecMore_ = null;
 		if (node){
@@ -303,9 +302,9 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			// subkind 在下面确定			
-		};
+		} as unknown as SymbolNodeDecK;
 
 		if (node) {
 
@@ -454,9 +453,9 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			// subKind 在下面确定
-		};
+		} as unknown as SymbolNodeDecK;
 		let p = null;
 		if (node) {
 			typeName(node);
@@ -523,7 +522,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line: line,
 			children: [],
 			names: [],
-			table: undefined
+			table: []
 		};
 
 		if (typeP){
@@ -539,7 +538,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined
+			table: []
 		};
 
 		if (varP){
@@ -633,9 +632,9 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			// subKind 在下面确定
-		};
+		} as unknown as SymbolNodeDecK;
 		if (current().type === LexicalType.INTEGER
 			|| current().type === LexicalType.CHAR
 			|| current().type === LexicalType.ARRAY
@@ -745,7 +744,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined
+			table: []
 		};
 		match(LexicalType.BEGIN);
 		if (node){
@@ -803,7 +802,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 		};
 		match(LexicalType.PROCEDURE);
 		if (node)
@@ -913,7 +912,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: ExpKinds.VariK,
 			attr: {
 				varKind: VarKinds.IdV,
@@ -1009,7 +1008,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			// 子类型为变量类型
 			subKind: ExpKinds.VariK,
 			attr: {
@@ -1042,7 +1041,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: ExpKinds.VariK,
 			attr: {
 				varKind: VarKinds.IdV,
@@ -1058,8 +1057,9 @@ export default function SyntacticParser(tokens: Token[]) {
 				line,
 				children: [],
 				names: [],
-				table: undefined,
-				subKind : ExpKinds.ConstK
+				table: [],
+				subKind : ExpKinds.ConstK,
+				attr: {}
 			};
 			// 这部分初始化代同newExpNode
 			t.attr = {
@@ -1110,7 +1110,7 @@ export default function SyntacticParser(tokens: Token[]) {
 				line,
 				children: [],
 				names: [],
-				table: undefined,
+				table: [],
 				subKind: ExpKinds.OpK,
 				attr: {
 					varKind: VarKinds.IdV,
@@ -1151,7 +1151,7 @@ export default function SyntacticParser(tokens: Token[]) {
 				line,
 				children: [],
 				names: [],
-				table: undefined,
+				table: [],
 				subKind: ExpKinds.OpK,
 				attr: {
 					varKind: VarKinds.IdV,
@@ -1190,7 +1190,7 @@ export default function SyntacticParser(tokens: Token[]) {
 				line,
 				children: [],
 				names: [],
-				table: undefined,
+				table: [],
 				subKind: ExpKinds.OpK,
 				attr: {
 					varKind: VarKinds.IdV,
@@ -1225,7 +1225,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: StmtKinds.IfK
 		};
 		match(LexicalType.IF);
@@ -1263,7 +1263,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: StmtKinds.WhileK
 		};
 		
@@ -1294,7 +1294,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: StmtKinds.ReadK
 		};
 		match(LexicalType.READ);
@@ -1320,7 +1320,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: StmtKinds.WriteK
 		};
 		match(LexicalType.WRITE);
@@ -1346,7 +1346,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			subKind: StmtKinds.ReturnK
 		};
 		match(LexicalType.RETURN);
@@ -1366,7 +1366,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			// 小类为赋值语句
 			subKind : StmtKinds.AssignK
 		};
@@ -1377,9 +1377,10 @@ export default function SyntacticParser(tokens: Token[]) {
 				line,
 				children: [],
 				names: [],
-				table: undefined,
+				table: [],
 				// 小类为变量
-				subKind: ExpKinds.VariK
+				subKind: ExpKinds.VariK,
+				attr: {}
 			};
 			if (child1){
 				child1.names.push(temp_name);
@@ -1461,7 +1462,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined,
+			table: [],
 			// 小类为过程调用
 			subKind: StmtKinds.CallK
 		};
@@ -1607,7 +1608,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			line,
 			children: [],
 			names: [],
-			table: undefined
+			table: []
 		};
 
 		const head = programHead();

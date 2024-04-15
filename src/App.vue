@@ -5,17 +5,26 @@ import { LexicalType, Token } from "./lexicon/types";
 import LexicalParser from "./lexicon/parser";
 import SyntacticParser from "./syntax/parser";
 import { SymbolNode, SymbolNodeKind } from "./syntax/types";
+import SemanticParser from "./semantics/parser";
+import { SemanticTableItem } from "./semantics/types";
 
-interface Tree {
+interface SyntaticDisplayTree {
   node: SymbolNode,
-  children?: Tree[]
+  children?: SyntaticDisplayTree[]
+}
+
+interface SemanticDisplayTree {
+  name?: string,
+  node?: SemanticTableItem,
+  children?: SemanticDisplayTree[]
 }
 
 let programText = ref<string>("");
 let errorMsg = ref<string>("");
 let examples = ref(examplesData);
 let tokensByLines = ref<Token[][]>([]);
-let syntaxTree = ref<Tree[]>([]);
+let syntaxTree = ref<SyntaticDisplayTree[]>([]);
+let semanticTree = ref<SemanticDisplayTree[]>([]);
 
 function compile(){
 	const tokens = LexicalParser(programText.value);
@@ -31,8 +40,8 @@ function compile(){
 	}, [] as Token[][]);
 
 	const syntax = SyntacticParser(tokens);
-	function transformTree(node: SymbolNode): Tree[]{
-		const tree: Tree = {
+	function transformTree(node: SymbolNode): SyntaticDisplayTree[]{
+		const tree: SyntaticDisplayTree = {
 			node: node,
 			children: []
 		};
@@ -50,7 +59,24 @@ function compile(){
 	}
 	syntaxTree.value = transformTree(syntax);
 	console.log(syntax);
+
+	const semantics = SemanticParser(syntax);
+	semanticTree.value = semantics.map((level, i)=>{
+		return {
+			name: i.toString(),
+			children: level.map(group=>{
+				return {
+					children: group.map(node=>{
+						return {
+							node: node
+						};
+					})
+				};
+			})
+		};
+	});
 }
+
 
 function tryCompile(){
 	try{
@@ -58,6 +84,7 @@ function tryCompile(){
 		errorMsg.value = "";
 	}
 	catch(e: Error){
+		console.error(e);
 		errorMsg.value = e.message;
 	}
 }
@@ -99,38 +126,56 @@ function tryCompile(){
         <div v-if="syntaxTree">
           <el-tree :data="syntaxTree" default-expand-all>
             <template #default="{ data }">
-              <span class="syntactic-tree-item">
+              <span class="tree-item">
                 <span style="display: flex; gap: 10px;">
                   <span>{{data.node.kind}}</span> 
                   <span v-if="data.node.subKind">{{ data.node.subKind }}</span>
                   <span v-if="data.node.names.length > 0">{{ data.node.names }}</span>
                   <span v-if="data.node.attr">attr: {{ data.node.attr }}</span>
                 </span>
-                <span class="syntactic-tree-item-copy" @click.stop="console.log(toRaw(data.node))">复制</span>
+                <span class="tree-item-copy" @click.stop="console.log(toRaw(data.node))">复制</span>
               </span>
             </template>
           </el-tree>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="语义分析">语义分析</el-tab-pane>
+      <el-tab-pane label="语义分析">
+        <div v-if="semanticTree">
+          <el-tree :data="semanticTree" default-expand-all>
+            <template #default="{ data }">
+              <span class="tree-item">
+                <span v-if="data.name" style="display: flex; gap: 10px;">
+                  {{ data.name }}
+                </span>
+                <span v-if="data.node" style="display: flex; gap: 10px;">
+                  <span>{{ data.node.id }}</span>
+                  <span>{{ data.node.attr.kind }}</span>
+                  <span style="max-width: 500px; text-overflow: ellipsis; overflow: hidden;">type: {{ JSON.stringify(data.node.attr.type)}}</span>
+                </span>
+                <span v-if="data.node" class="tree-item-copy" @click="console.log(toRaw(data.node))">复制</span>
+              </span>
+            </template>
+          </el-tree>
+        </div>
+      </el-tab-pane>
       <el-tab-pane label="中间代码生成">中间代码生成</el-tab-pane>
       <el-tab-pane label="目标代码生成">目标代码生成</el-tab-pane>
     </el-tabs>
 </template>
 
 <style scoped>
-.syntactic-tree-item{
+.tree-item{
   display: flex; 
   justify-content: space-between; 
   flex: 1;
 }
 
-.syntactic-tree-item .syntactic-tree-item-copy{
+.tree-item .tree-item-copy{
   display: none;
   margin-right: 10px;
 }
 
-.el-tree-node__content:hover .syntactic-tree-item-copy{
+.el-tree-node__content:hover .tree-item-copy{
   display: inline;
 }
 </style>

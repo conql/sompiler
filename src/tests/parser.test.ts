@@ -3,6 +3,7 @@ import LexicalParser from "../lexicon/parser";
 import PROGRAM_BUBBLE from "./bubble.snl?raw";
 import ADD from "./add.snl?raw";
 import SyntacticParser from "../syntax/parser";
+import SemanticParser from "../semantics/parser";
 
 test("Lexical Parser", () => {
 	const tokenList = LexicalParser(ADD);
@@ -24,4 +25,12 @@ test("Syntactic Parser", () => {
 	const tokenList = LexicalParser(ADD);
 	const syntaxTree = SyntacticParser(tokenList);
 	console.dir(syntaxTree, { depth: 15 });
+});
+
+test("Semantic Parser", () => {
+	const tokenList = LexicalParser(PROGRAM_BUBBLE);
+	const syntaxTree = SyntacticParser(tokenList);
+	console.dir(syntaxTree, { depth: 15 });
+
+	SemanticParser(syntaxTree);
 });
