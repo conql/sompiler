@@ -1611,12 +1611,14 @@ export default function SyntacticParser(tokens: Token[]) {
 			table: []
 		};
 
+		// 程序头
 		const head = programHead();
 		if (!head) {
 			throw new SyntacticError("Program head is missing.");
 		} else
 			root.children.push(head);
 
+		// 声明部分，可以缺失
 		const part = declarePart();
 		if (!part) {
 			// declarePart is missing
@@ -1624,12 +1626,15 @@ export default function SyntacticParser(tokens: Token[]) {
 		} else{
 			root.children.push(part);
 		}
+
+		// 程序体
 		const body = programBody();
 		if (!body) {
 			throw new SyntacticError("Program body is missing.");
 		} else
 			root.children.push(body);
 
+		// 程序最后的.
 		match(LexicalType.DOT);
 
 		return root;
