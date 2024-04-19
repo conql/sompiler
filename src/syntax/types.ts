@@ -16,6 +16,7 @@ export enum SymbolNodeKind {
 	ExpK = "ExpK"
 }
 
+// 声明类型
 export enum DecKinds {
 	ArrayK = "ArrayK",
 	CharK = "CharK",
@@ -24,6 +25,7 @@ export enum DecKinds {
 	IdK = "IdK"
 }
 
+// 语句类型
 export enum StmtKinds {
 	IfK = "IfK",
 	WhileK = "WhileK",
@@ -35,6 +37,7 @@ export enum StmtKinds {
 	StmtK = "StmtK"
 }
 
+// 表达式类型
 export enum ExpKinds {
 	OpK = "OpK",
 	ConstK = "ConstK",
@@ -49,6 +52,7 @@ export enum VarKinds {
 	FieldMembV = "FieldMembV"
 }
 
+// 表达式运算符
 export enum ExpOp{
 	LT = LexicalType.LT,
 	EQ = LexicalType.EQ,
@@ -58,14 +62,14 @@ export enum ExpOp{
 	OVER = LexicalType.OVER
 }
 
-/* 表达式类型ExpKind类型的枚举定义:         *
- * 操作类型OpK,常数类型ConstK,变量类型VarK */
+// 类型检查
 export enum ExpTypes {
 	Void = "Void",
 	Integer = "Integer",
 	Boolean = "Boolean",
 }
 
+// 参数类型
 export enum ParamTypes {
 	VarParamType = "VarParamType",
 	ValueParamType = "ValueParamType"

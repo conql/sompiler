@@ -84,7 +84,7 @@ export default function SemanticParser(node: SymbolNode) {
 
 	// 寻找已定义的类型名字，返回类型的内部表示
 	function nameType(node: SymbolNodeDecK): TypeDetail {
-		const name = node.attr!.type_name!;
+		const name = node.attr!.type_name!;	// 类型名
 		const item = lookup(name);
 		if (item.attr.kind !== IdKind.typeKind) {
 			throw new Error(`[Error] Not a type: ${name}`);
@@ -136,10 +136,11 @@ export default function SemanticParser(node: SymbolNode) {
 
 	// 处理类型声明部分的语义分析
 	// 遇到类型T时，构造其内部节点，填写符号表
+	// 第一次调用传入类型声明节点TypeK的第一个子节点
 	function typeDecPart(node?: SymbolNodeDecK) {
 		while (node) {
-			const type = typeProcess(node, node.subKind);
-			enter(node.names[0], { kind: IdKind.typeKind, type });
+			const type = typeProcess(node, node.subKind);	// 构造内部表示
+			enter(node.names[0], { kind: IdKind.typeKind, type });	// 登记到符号表
 			node = node.sibling as SymbolNodeDecK;
 		}
 	}
