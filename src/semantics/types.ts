@@ -81,7 +81,7 @@ export interface Attribute {
     }
 }
 
-// 过程标识符的参数列表
+// 语义分析表项
 export interface SemanticTableItem {
     id: string;
     attr: Attribute;

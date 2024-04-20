@@ -42,7 +42,7 @@ export default class codeEmitter{
         this.highEmitLoc = Math.max(this.highEmitLoc, this.emitLoc);
     }
 
-    // 跳转指令生成
+    // 跳转指令生成，取0时用于返回当前地址
     emitSkip(howMany: number): number {
         let i = this.emitLoc;
         this.emitLoc += howMany;
