@@ -15,7 +15,7 @@ then
  t:=a[k]; 
  a[k]:=a[k+1]; 
  a[k+1]:=t 
- else temp:=0 
+ else t:=0 
  fi; 
  k:=k+1 
  endwh; 

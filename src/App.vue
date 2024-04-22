@@ -84,7 +84,7 @@ function compile(){
 
 
 function tryCompile(){
-  compile();
+	compile();
 	try{
 		errorMsg.value = "";
 	}
@@ -137,6 +137,7 @@ function tryCompile(){
                   <span v-if="data.node.subKind">{{ data.node.subKind }}</span>
                   <span v-if="data.node.names.length > 0">{{ data.node.names }}</span>
                   <span v-if="data.node.attr">attr: {{ data.node.attr }}</span>
+                  <span>{{data.node.line}}</span>
                 </span>
                 <span class="tree-item-copy" @click.stop="console.log(toRaw(data.node))">复制</span>
               </span>

@@ -1,7 +1,7 @@
 import { DecKinds, ExpKinds, ExpOp, ParamTypes, StmtKinds, SymbolNode, SymbolNodeDecK, SymbolNodeExpK, SymbolNodeKind, SymbolNodeStmtK, VarKinds } from "../syntax/types";
 import { Attribute, SemanticTableItem, IdKind, TypeKind, IntDetail, CharDetail, TypeDetail, AccessType, BoolDetail } from "./types";
 
-export default function SemanticParser(node: SymbolNode) {
+export default function SemanticParser(root: SymbolNode) {
 	const INITIAL_OFFSET = 7;
 	const Scope: SemanticTableItem[][] = [[]];
 	let Level: number = 0; // Scope栈的当前层次
@@ -242,10 +242,12 @@ export default function SemanticParser(node: SymbolNode) {
 			kind: IdKind.procKind,
 			procAttr: {
 				level: Level + 1,
-				param: paraDecList(node)
+				param: null as unknown,
 			} as Attribute["procAttr"],
 			type: {} as TypeDetail
 		});
+
+		item.attr.procAttr!.param = paraDecList(node);
 
 		node.table[0] = item;
 		return item;
@@ -264,7 +266,7 @@ export default function SemanticParser(node: SymbolNode) {
 			varDecPart(node.children[0] as SymbolNodeDecK);
 		}
 
-		return Scope[Level];
+		return [...Scope[Level]];
 	}
 
 	function body(node: SymbolNode) {
@@ -344,6 +346,8 @@ export default function SemanticParser(node: SymbolNode) {
 				case ExpOp.TIMES:
 				case ExpOp.OVER:
 					return [IntDetail, AccessType.dir];
+				default:
+					throw new Error(`[Error] Unknown operator: ${node.attr.op} at ${node.line}`);
 				}
 			}
 			else {
@@ -439,7 +443,7 @@ export default function SemanticParser(node: SymbolNode) {
 
 	// 处理函数调用语句分析
 	function callStatement(node: SymbolNodeStmtK) {
-		const entry = lookup(node.names[0]);
+		const entry = lookup(node.children[0].names[0]);
 		node.children[0].table[0] = entry;
 
 		// 是否是函数
@@ -531,7 +535,7 @@ export default function SemanticParser(node: SymbolNode) {
 
 	function main() {
 		// 跳到语法树的声明节点
-		let current: SymbolNode | undefined = node.children[1];
+		let current: SymbolNode | undefined = root.children[1];
 		while (current) {
 			if (current.kind === SymbolNodeKind.TypeK) {
 				// 处理类型声明部分
@@ -548,8 +552,8 @@ export default function SemanticParser(node: SymbolNode) {
 			current = current.sibling;
 		}
 
-		if(node.children[2] && node.children[2].kind === SymbolNodeKind.StmLK) {
-			body(node.children[2]);
+		if(root.children[2] && root.children[2].kind === SymbolNodeKind.StmLK) {
+			body(root.children[2]);
 		}
 
 		if(Level != -1){

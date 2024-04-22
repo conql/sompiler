@@ -48,7 +48,7 @@ export const CharDetail: TypeDetail = {
 // 基础类型Bool
 export const BoolDetail: TypeDetail = {
 	size: 1,
-	kind: TypeKind.integer
+	kind: TypeKind.bool
 };
 
 // 变量的访问类型，直接访问或间接访问

@@ -49,7 +49,6 @@ export default function SyntacticParser(tokens: Token[]) {
 
 		match(LexicalType.PROGRAM);
 		if (current().type === LexicalType.ID) {
-			node.line = 0;
 			// 复制程序名
 			node.names.push(current().value);
 		}
@@ -78,7 +77,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return;
 		}
 	};
@@ -136,11 +135,31 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return null;
 		}
 	};
 
+	const idMore = (node: SymbolNodeDecK) => {
+		switch (current().type) {
+		case LexicalType.SEMI:
+			break;
+		case LexicalType.COMMA:
+			match(LexicalType.COMMA);
+			idList(node);
+			break;
+		default:
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+		}
+	};
+
+	const idList = (node: SymbolNodeDecK) => {
+		if(current().type!==LexicalType.ID){
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+		}
+		node.names.push(current().value);
+		idMore(node);
+	};
 
 	/********************************************************************/
 	/* 函数名 fieldDecList		 							            */
@@ -166,22 +185,20 @@ export default function SyntacticParser(tokens: Token[]) {
 			){
 				baseType(node);
 				// 把当前的标识符放到names数组中
-				node.names.push(current().value);
-				match(LexicalType.ID);
+				idList(node);
 				match(LexicalType.SEMI);
 				fieldDecMore_ = fieldDecMore();
 			}
 			else if (current().type === LexicalType.ARRAY)
 			{
 				arrayType(node);
-				node.names.push(current().value);
-				match(LexicalType.ID);
+				idList(node);
 				match(LexicalType.SEMI);
 				fieldDecMore_ = fieldDecMore();
 			}
 			else {
 				forward();
-				SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+				throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			}
 			
 			if (fieldDecMore_)
@@ -205,7 +222,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			node.children.push(fieldDecList_);
 		}
 		else
-			SyntaxError("a record body is missing.");
+			throw new SyntaxError("a record body is missing.");
 		match(LexicalType.END);
 		node.subKind = DecKinds.RecordK;
 	};
@@ -227,7 +244,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			return;
 		}
 		forward();
-		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+		throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
 	};
 
@@ -248,7 +265,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			return typeDecList();
 		}
 		forward();
-		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+		throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
 	};
 
@@ -276,9 +293,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			// 该节点的子类型为IdK
 			node.subKind = DecKinds.IdK;
 			// 属性为type_name，记录标识符的类型名
-			node.attr = {
-				type_name: current().value
-			};
+			node.attr = Object.assign({}, node.attr, { type_name: current().value });
 			match(LexicalType.ID);
 		} else {
 			forward();
@@ -340,7 +355,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		match(LexicalType.TYPE);
 		const node = typeDecList();
 		if (!node) {
-			SyntaxError("Type declaration list is missing.");
+			throw new SyntaxError("Type declaration list is missing.");
 		}
 		return node;
 	};
@@ -367,7 +382,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			return null;
 
 		forward();
-		SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+		throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		return null;
 	};
 
@@ -389,7 +404,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 	};
 
@@ -407,7 +422,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else{
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		varIdMore(node);
 	};
@@ -435,7 +450,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		return node;
 	};
@@ -478,7 +493,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		match(LexicalType.VAR);
 		const node = varDecList();
 		if (!node) {
-			SyntaxError("Variable declaration list is missing.");
+			throw new SyntaxError("Variable declaration list is missing.");
 		}
 		return node;
 	};
@@ -503,7 +518,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return null;
 		}
 	};
@@ -517,23 +532,27 @@ export default function SyntacticParser(tokens: Token[]) {
 	/********************************************************************/
 	const declarePart = () => {
 		// 类型声明
-		let typeP: SymbolNodeCommon = {
+		let typeP: SymbolNodeCommon|null = {
 			kind: SymbolNodeKind.TypeK,
 			line: line,
 			children: [],
 			names: [],
 			table: []
 		};
+		let pp:SymbolNodeCommon|null = typeP;  
+
 
 		if (typeP){
 			typeP.line = 0;
 			const tp1 = typeDec();
 			if (tp1)
 				typeP.children.push(tp1);
+			else
+				typeP = null;
 		}
 
 		// 变量声明
-		const varP: SymbolNodeCommon = {
+		let varP: SymbolNodeCommon|null = {
 			kind: SymbolNodeKind.VarK,
 			line,
 			children: [],
@@ -548,36 +567,23 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 
 		// 过程或函数
-		const procP = procDec();
-		
-		if (typeP.children)
-			if (varP.children)
-			{
-				typeP.sibling = varP;
-				if (procP)
-					varP.sibling = procP;
-			}
-			else if (!varP.children)
-			{
-				if (procP)
-					typeP.sibling = procP;
-			}
-			else if (!typeP.children)
-			{
-				if (varP.children)
-				{	
-					typeP = varP;
-					if (procP)
-						typeP.sibling = procP;
-				}
-				else if (!varP.children)
-				{
-					if (procP)
-						return procP;
-					else return null;
-				}
-			}
-		return typeP;
+		const s = procDec();
+
+		if(!varP){varP=s;}
+
+		if(!typeP){pp=typeP=varP;}
+
+		if(typeP!=varP)
+		{
+			typeP!.sibling = varP!;
+			typeP = varP;
+		}
+		if(varP!=s)
+		{
+			varP!.sibling = s!;
+			varP = s;
+		}
+		return pp;
 	};
 
 	/********************************************************************/
@@ -598,7 +604,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 	};
 
@@ -615,7 +621,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		fidMore(node);
 	};
@@ -658,7 +664,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		return node;
 	};
@@ -680,11 +686,11 @@ export default function SyntacticParser(tokens: Token[]) {
 			if (t)
 				return t;
 			else
-				SyntaxError("a param declaration is missing.");
+				throw new SyntaxError("a param declaration is missing.");
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			return null;
 		}
 	};
@@ -727,7 +733,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 	};
 
@@ -767,7 +773,7 @@ export default function SyntacticParser(tokens: Token[]) {
 	const procBody = () => {
 		const node = programBody();
 		if (!node) {
-			SyntaxError("Procedure body is missing.");
+			throw new SyntaxError("Procedure body is missing.");
 		}
 		return node;
 	};
@@ -844,7 +850,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			return procDeclaration();
 		else {
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 		}
 		return null;
 	};
@@ -894,7 +900,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			break;
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 	};
@@ -966,13 +972,9 @@ export default function SyntacticParser(tokens: Token[]) {
 			match(LexicalType.LMIDPAREN);
 			p = exp();
 			// p 是数组下标，IdV标识符变量
-			p.attr = {
-				varKind : VarKinds.IdV
-			};
+			p.attr.varKind = VarKinds.IdV;
 			// ArrayMembV 数组成员变量类型
-			node.attr = {
-				varKind : VarKinds.ArrayMembV
-			};
+			node.attr.varKind = VarKinds.ArrayMembV;
 			node.children.push(p);
 			match(LexicalType.RMIDPAREN);
 			break;
@@ -980,18 +982,14 @@ export default function SyntacticParser(tokens: Token[]) {
 		case LexicalType.DOT:
 			match(LexicalType.DOT);
 			p2 = fieldVar();
-			p2.attr = {
-				varKind: VarKinds.IdV
-			};
-			node.attr = {
-				varKind: VarKinds.FieldMembV
-			};
+			p2.attr.varKind = VarKinds.IdV;
+			node.attr.varKind = VarKinds.FieldMembV;
 			node.children.push(p2);
 			break;
 
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}	
 	};
@@ -1085,7 +1083,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 
@@ -1413,7 +1411,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			break;
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 		return t;
@@ -1443,7 +1441,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			break;
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 		return t;
@@ -1469,16 +1467,24 @@ export default function SyntacticParser(tokens: Token[]) {
 		match(LexicalType.LPAREN);
 
 		if (t){
-			const child0 = actParamList();
-			if (child0){
-				t.children.push(child0);
-				// why?
-				child0.names.push(temp_name);
-			}
-			// 对应t->child[1] = actParamList();
-			const p = actParamList();
-			if (p)
-				t.children.push(p);
+			const child0:SymbolNodeExpK = {
+				kind: SymbolNodeKind.ExpK,
+				line,
+				children: [],
+				names: [],
+				table: [],
+				subKind: ExpKinds.VariK,
+				attr: {
+					varKind: VarKinds.IdV,
+					type: ExpTypes.Void
+				}
+			};
+			child0.names.push(temp_name);
+			t.children.push(child0);
+			
+			const child1 = actParamList();
+			if (child1)
+				t.children.push(child1);
 		}
 		match(LexicalType.RPAREN);
 		return t;
@@ -1506,7 +1512,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			break;
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 		return t;
@@ -1551,7 +1557,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			break;
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 		return t;
@@ -1578,7 +1584,7 @@ export default function SyntacticParser(tokens: Token[]) {
 			break;
 		default:
 			forward();
-			SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
+			throw new SyntaxError("Unexpected token: `" + current().value + "` at line " + current().line + ".");
 			break;
 		}
 		return t;
