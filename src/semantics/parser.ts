@@ -336,14 +336,14 @@ export default function SemanticParser(node: SymbolNode) {
 
 			if (compatible(child1, child2)) {
 				switch (node.attr.op) {
-					case ExpOp.LT:
-					case ExpOp.EQ:
-						return [BoolDetail, AccessType.dir];
-					case ExpOp.PLUS:
-					case ExpOp.MINUS:
-					case ExpOp.TIMES:
-					case ExpOp.OVER:
-						return [IntDetail, AccessType.dir];
+				case ExpOp.LT:
+				case ExpOp.EQ:
+					return [BoolDetail, AccessType.dir];
+				case ExpOp.PLUS:
+				case ExpOp.MINUS:
+				case ExpOp.TIMES:
+				case ExpOp.OVER:
+					return [IntDetail, AccessType.dir];
 				}
 			}
 			else {
@@ -506,6 +506,7 @@ export default function SemanticParser(node: SymbolNode) {
 
 	function readStatement(node: SymbolNodeStmtK) {
 		const entry = lookup(node.names[0]);
+		node.table[0] = entry;
 
 		if (!entry) {
 			throw new Error(`[Error] Undefined identifier: ${node.names[0]} at ${node.line}`);
@@ -542,14 +543,18 @@ export default function SemanticParser(node: SymbolNode) {
 			}
 			else if (current.kind === SymbolNodeKind.ProcDecK) {
 				// 处理过程声明部分
-				procDecPart(current.children[0]);
+				procDecPart(current);
 			}
 			current = current.sibling;
 		}
-		if (!debugLog[0]) {
-			debugLog[0] = [];
+
+		if(node.children[2] && node.children[2].kind === SymbolNodeKind.StmLK) {
+			body(node.children[2]);
 		}
-		debugLog[Level].push(Scope[0]);
+
+		if(Level != -1){
+			destoryTable();
+		}
 		return debugLog;
 	}
 

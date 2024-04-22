@@ -1,0 +1,4 @@
+program p 
+begin
+write(1)
+end.

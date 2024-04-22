@@ -7,6 +7,7 @@ import SyntacticParser from "./syntax/parser";
 import { SymbolNode, SymbolNodeKind } from "./syntax/types";
 import SemanticParser from "./semantics/parser";
 import { SemanticTableItem } from "./semantics/types";
+import codeGenerator from "./gencode/generator";
 
 interface SyntaticDisplayTree {
   node: SymbolNode,
@@ -25,6 +26,8 @@ let examples = ref(examplesData);
 let tokensByLines = ref<Token[][]>([]);
 let syntaxTree = ref<SyntaticDisplayTree[]>([]);
 let semanticTree = ref<SemanticDisplayTree[]>([]);
+let generatedCode = ref<string[]>([]);
+
 
 function compile(){
 	const tokens = LexicalParser(programText.value);
@@ -75,12 +78,14 @@ function compile(){
 			})
 		};
 	});
+
+	generatedCode.value = codeGenerator(syntax);
 }
 
 
 function tryCompile(){
+  compile();
 	try{
-		compile();
 		errorMsg.value = "";
 	}
 	catch(e: Error){
@@ -158,8 +163,11 @@ function tryCompile(){
           </el-tree>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="中间代码生成">中间代码生成</el-tab-pane>
-      <el-tab-pane label="目标代码生成">目标代码生成</el-tab-pane>
+      <el-tab-pane label="目标代码生成">
+        <div>
+          <pre>{{ generatedCode.join("\n") }}</pre>
+        </div>
+      </el-tab-pane>
     </el-tabs>
 </template>
 

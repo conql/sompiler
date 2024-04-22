@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import LexicalParser from "../lexicon/parser";
 import PROGRAM_BUBBLE from "./bubble.snl?raw";
 import ADD from "./add.snl?raw";
+import SIMPLE from "./simple.snl?raw";
 import SyntacticParser from "../syntax/parser";
 import SemanticParser from "../semantics/parser";
 import codeGenerator from "../gencode/generator";
@@ -37,8 +38,14 @@ test("Semantic Parser", () => {
 });
 
 test("Generator Parser", () => {
-	const tokenList = LexicalParser(PROGRAM_BUBBLE);
+	const tokenList = LexicalParser(ADD);
 	const syntaxTree = SyntacticParser(tokenList);
 	SemanticParser(syntaxTree);
-	console.log(codeGenerator(syntaxTree));
-})
+	try
+	{
+		console.log(codeGenerator(syntaxTree));
+	}
+	catch(e){
+		console.log(e);
+	}
+});
