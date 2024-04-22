@@ -84,8 +84,8 @@ function compile(){
 
 
 function tryCompile(){
-	compile();
 	try{
+		compile();
 		errorMsg.value = "";
 	}
 	catch(e: Error){

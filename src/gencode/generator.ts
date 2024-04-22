@@ -207,7 +207,6 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 
 			/*处理输入语句*/
 		case StmtKinds.ReadK:
-			console.log(node.subKind, StmtKinds.ReadK, node);
 			if (emitter.TraceCode)
 				emitter.emitComment("----读语句----");
 
