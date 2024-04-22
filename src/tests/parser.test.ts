@@ -4,6 +4,7 @@ import PROGRAM_BUBBLE from "./bubble.snl?raw";
 import ADD from "./add.snl?raw";
 import SyntacticParser from "../syntax/parser";
 import SemanticParser from "../semantics/parser";
+import codeGenerator from "../gencode/generator";
 
 test("Lexical Parser", () => {
 	const tokenList = LexicalParser(ADD);
@@ -34,3 +35,10 @@ test("Semantic Parser", () => {
 
 	SemanticParser(syntaxTree);
 });
+
+test("Generator Parser", () => {
+	const tokenList = LexicalParser(PROGRAM_BUBBLE);
+	const syntaxTree = SyntacticParser(tokenList);
+	SemanticParser(syntaxTree);
+	console.log(codeGenerator(syntaxTree));
+})

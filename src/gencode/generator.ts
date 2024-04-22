@@ -663,5 +663,6 @@ export default function codeGenerator(node: SymbolNodeCommon) {
         // 处理完毕主程序，退出AR
         emitter.emitComment("----主程序结束----");
         emitter.emitRO("HALT", 0, 0, 0, "");
+        return emitter.code;
     }
 }
