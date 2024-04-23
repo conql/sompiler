@@ -618,7 +618,7 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 		let currentLoc: number;    // 主程序入口地址
 		let savedLoc: number;    // 目标代码的第一条指令地址
 
-
+		emitter.TraceCode = true;
 		emitter.emitComment("SNL目标代码");
 		emitter.emitComment("标准预备工作:");
 		// 从0地址处载入最大地址值，赋值给mp
