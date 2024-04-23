@@ -6,6 +6,7 @@ import SIMPLE from "./simple.snl?raw";
 import SyntacticParser from "../syntax/parser";
 import SemanticParser from "../semantics/parser";
 import codeGenerator from "../gencode/generator";
+import { SemanticTableItem } from "../semantics/types";
 
 test("Lexical Parser", () => {
 	const tokenList = LexicalParser(ADD);

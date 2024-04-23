@@ -1,0 +1,123 @@
+* SNL目标代码
+
+* 标准预备工作:
+
+0:  LD  3,0(0)	*从0地址处载入最大地址值
+
+1:  ST  0,0(0)	*清空0地址单元内容
+
+* 预备工作结束
+
+2:  LDA  7,3(0)	*主程序入口
+
+* ----主程序----
+
+3:  LDC  0,0(0)	*将ac置0
+
+4:  LDC  1,0(0)	*将ac1置0
+
+5:  LDC  2,0(0)	*将ac2置0
+
+6:  ST  0,0(6)	*将sp置0
+
+7:  LDA  4,2(6)	*mian displayOff
+
+8:  ST  0,0(4)	*main display
+
+9:  LDA  5,1(4)	*main top
+
+* ----读语句----
+
+10:  IN  0,0,0	*读一个整数
+
+11:  LDA  2,0(0)	*保存ac到ac2中
+
+12:  LDC  0,0(0)	* base type var relative address
+
+13:  LDA  1,0(4)	*var process
+
+14:  ADD  1,1,6	*var absolute address
+
+15:  LD  1,0(1)	*var sp
+
+16:  ADD  0,0,1	* var absolute off
+
+17:  ST  2,0(0)	*dir 存入值
+
+* ----读语句结束----
+
+* ----赋值语句----
+
+18:  LDC  0,0(0)	* base type var relative address
+
+19:  LDA  1,0(4)	*var process
+
+20:  ADD  1,1,6	*var absolute address
+
+21:  LD  1,0(1)	*var sp
+
+22:  ADD  0,0,1	* var absolute off
+
+23:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+24:  LDC  0,0(0)	* base type var relative address
+
+25:  LDA  1,0(4)	*var process
+
+26:  ADD  1,1,6	*var absolute address
+
+27:  LD  1,0(1)	*var sp
+
+28:  ADD  0,0,1	* var absolute off
+
+29:  LD  0,0(0)	*load id value
+
+* <- Id
+
+30:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+31:  LDC  0,10(0)	*load const
+
+* <- Const
+
+32:  LD  1,0(3)	*op: load left
+
+33:  ADD  0,1,0	*op +
+
+* <- Op
+
+34:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----写语句----
+
+* -> 语法树节点 标识符 Id
+
+35:  LDC  0,0(0)	* base type var relative address
+
+36:  LDA  1,0(4)	*var process
+
+37:  ADD  1,1,6	*var absolute address
+
+38:  LD  1,0(1)	*var sp
+
+39:  ADD  0,0,1	* var absolute off
+
+40:  LD  0,0(0)	*load id value
+
+* <- Id
+
+41:  OUT  0,0,0	*输出整数
+
+* ----写语句结束----
+
+* ----主程序结束----
+
+42:  HALT  0,0,0	*

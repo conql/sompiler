@@ -1,12 +1,14 @@
 import { DecKinds, ExpKinds, ExpOp, ParamTypes, StmtKinds, SymbolNode, SymbolNodeDecK, SymbolNodeExpK, SymbolNodeKind, SymbolNodeStmtK, VarKinds } from "../syntax/types";
 import { Attribute, SemanticTableItem, IdKind, TypeKind, IntDetail, CharDetail, TypeDetail, AccessType, BoolDetail } from "./types";
 
+export let MainOffset: number = 0;	// 主程序的noff偏移，在目标代码生成时使用
+
 export default function SemanticParser(root: SymbolNode) {
 	const INITIAL_OFFSET = 7;
 	const Scope: SemanticTableItem[][] = [[]];
 	let Level: number = 0; // Scope栈的当前层次
 	let Offset: number = 0; // 在同层的变量偏移
-	let MainOffset: number = 0; // 主程序的noff偏移
+	//let MainOffset: number = 0; // 主程序的noff偏移
 	let StoreNoff: number = 0;  // 保存主程序的display表的偏移
 	let SavedOffset: number = 0; // 当前层的displayOff
 

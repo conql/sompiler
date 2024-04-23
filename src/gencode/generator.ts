@@ -2,8 +2,7 @@ import { VarKinds, ExpOp, SymbolNode, SymbolNodeCommon, SymbolNodeKind, SymbolNo
 import codeEmitter from "./emitter";
 import { regs } from "./types";
 import { AccessType, SemanticTableItem, TypeDetail } from "../semantics/types";
-
-
+import { MainOffset } from "../semantics/parser";
 // SNL目标代码生成程序
 export default function codeGenerator(root: SymbolNodeCommon) {
 	// node : SymbolNodeKind.ProcDecK
@@ -13,7 +12,7 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 
 
 	const Off: number = 0;    // 在同层的变量便宜
-	const mainOff: number = 0;    // 主程序的displayOff
+	
 	const savedOff: number = 0;    // 当前层的displayoFF
 
 
@@ -129,252 +128,252 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 
 		switch (node.subKind) {
 
-		/*处理if语句*/
-		case StmtKinds.IfK:
-			if (emitter.TraceCode)
-				emitter.emitComment("----if语句----");
-			p0 = node.children[0];  // 条件表达式
-			p1 = node.children[1];  // then语句序列
-			p2 = node.children[2];  // else语句序列
-			cGen(p0);   // 生成测试表达式代码
+			/*处理if语句*/
+			case StmtKinds.IfK:
+				if (emitter.TraceCode)
+					emitter.emitComment("----if语句----");
+				p0 = node.children[0];  // 条件表达式
+				p1 = node.children[1];  // then语句序列
+				p2 = node.children[2];  // else语句序列
+				cGen(p0);   // 生成测试表达式代码
 
-			savedLoc1 = emitter.emitSkip(1);    // 保存跳转地址
-			emitter.emitComment("if: jump to else belongs here");
+				savedLoc1 = emitter.emitSkip(1);    // 保存跳转地址
+				emitter.emitComment("if: jump to else belongs here");
 
-			cGen(p1);   // 生成then语句序列代码
-			savedLoc2 = emitter.emitSkip(1);    // 保存跳转地址
-			emitter.emitComment("if: jump to end belongs here");
+				cGen(p1);   // 生成then语句序列代码
+				savedLoc2 = emitter.emitSkip(1);    // 保存跳转地址
+				emitter.emitComment("if: jump to end belongs here");
 
-			currentLoc = emitter.emitSkip(0);    // 获取当前地址
-			emitter.emitBackup(savedLoc1);    // 回填跳转地址
+				currentLoc = emitter.emitSkip(0);    // 获取当前地址
+				emitter.emitBackup(savedLoc1);    // 回填跳转地址
 
-			emitter.emitRM_Abs("JEQ", regs.ac, currentLoc, "if: jmp to else");
-			emitter.emitRestore();  // 返回到当前位置
-			cGen(p2);   // 生成else语句序列代码
-			currentLoc = emitter.emitSkip(0);    // 获取当前地址
-			emitter.emitBackup(savedLoc2);    // 回填跳转地址
-			emitter.emitRM_Abs("LDA", regs.pc, currentLoc, "jmp to end");
-			emitter.emitRestore();  // 返回到当前位置
-			if (emitter.TraceCode)
-				emitter.emitComment("----if语句结束----");
-			break;
+				emitter.emitRM_Abs("JEQ", regs.ac, currentLoc, "if: jmp to else");
+				emitter.emitRestore();  // 返回到当前位置
+				cGen(p2);   // 生成else语句序列代码
+				currentLoc = emitter.emitSkip(0);    // 获取当前地址
+				emitter.emitBackup(savedLoc2);    // 回填跳转地址
+				emitter.emitRM_Abs("LDA", regs.pc, currentLoc, "jmp to end");
+				emitter.emitRestore();  // 返回到当前位置
+				if (emitter.TraceCode)
+					emitter.emitComment("----if语句结束----");
+				break;
 
 			/*处理while语句*/
-		case StmtKinds.WhileK:
-			if (emitter.TraceCode)
-				emitter.emitComment("----while语句----");
-			p0 = node.children[0];  // 条件表达式
-			p1 = node.children[1];  // 循环体
-			currentLoc = emitter.emitSkip(0);    // 获取当前地址
-			cGen(p0);   // 生成测试表达式代码
-			// 如果条件表达式为假，则跳转至while语句结束，此处为地址回填预留一个指令空间
-			savedLoc1 = emitter.emitSkip(1);
-			emitter.emitComment("while: jump out while");
-			cGen(p1);   // 生成循环体代码
-			emitter.emitRM("LDC", regs.pc, currentLoc, 0, "jmp back to test");
-			emitter.emitComment("return to condition expression");
-			currentLoc = emitter.emitSkip(0);    // 获取当前地址
-			emitter.emitBackup(savedLoc1);    // 回填跳转地址
-			emitter.emitRM_Abs("JEQ", regs.ac, currentLoc, "while: jmp out while");
-			emitter.emitRestore();  // 返回到当前位置
-			if (emitter.TraceCode)
-				emitter.emitComment("----赋值语句结束----");
-			break;
+			case StmtKinds.WhileK:
+				if (emitter.TraceCode)
+					emitter.emitComment("----while语句----");
+				p0 = node.children[0];  // 条件表达式
+				p1 = node.children[1];  // 循环体
+				currentLoc = emitter.emitSkip(0);    // 获取当前地址
+				cGen(p0);   // 生成测试表达式代码
+				// 如果条件表达式为假，则跳转至while语句结束，此处为地址回填预留一个指令空间
+				savedLoc1 = emitter.emitSkip(1);
+				emitter.emitComment("while: jump out while");
+				cGen(p1);   // 生成循环体代码
+				emitter.emitRM("LDC", regs.pc, currentLoc, 0, "jmp back to test");
+				emitter.emitComment("return to condition expression");
+				currentLoc = emitter.emitSkip(0);    // 获取当前地址
+				emitter.emitBackup(savedLoc1);    // 回填跳转地址
+				emitter.emitRM_Abs("JEQ", regs.ac, currentLoc, "while: jmp out while");
+				emitter.emitRestore();  // 返回到当前位置
+				if (emitter.TraceCode)
+					emitter.emitComment("----赋值语句结束----");
+				break;
 
 			/*处理赋值语句*/
-		case StmtKinds.AssignK:
-			if (emitter.TraceCode)
-				emitter.emitComment("----赋值语句----");
-			p0 = node.children[0];  // 左值
-			p1 = node.children[1];  // 右值
+			case StmtKinds.AssignK:
+				if (emitter.TraceCode)
+					emitter.emitComment("----赋值语句----");
+				p0 = node.children[0];  // 左值
+				p1 = node.children[1];  // 右值
 
-			findAdd(p0);  // 生成左边变量，绝对地址结果存到ac中
+				findAdd(p0);  // 生成左边变量，绝对地址结果存到ac中
 
-			emitter.emitRM("LDA", regs.ac2, 0, regs.ac, "保存ac");  // 把ac的值保存到ac2中
+				emitter.emitRM("LDA", regs.ac2, 0, regs.ac, "保存ac");  // 把ac的值保存到ac2中
 
-			cGen(p1);   // 生成右值代码，结果存到ac中
-			if (p0.table[0].attr.varAttr?.access == AccessType.dir) {
-				// [ac2] = ac
-				emitter.emitRM("ST", regs.ac, 0, regs.ac2, "dir");  //把ac的值存到ac2中
-			} else {
-				// 先取得变量的实际存储位置ac2，再把ac的值存到ac2中
-				emitter.emitRM("LD", regs.ac2, 0, regs.ac2, "indir");
-				emitter.emitRM("ST", regs.ac, 0, regs.ac2, "indir");
-			}
-			if (emitter.TraceCode)
-				emitter.emitComment("----赋值语句结束----");
-			break;
+				cGen(p1);   // 生成右值代码，结果存到ac中
+				if (p0.table[0].attr.varAttr?.access == AccessType.dir) {
+					// [ac2] = ac
+					emitter.emitRM("ST", regs.ac, 0, regs.ac2, "dir");  //把ac的值存到ac2中
+				} else {
+					// 先取得变量的实际存储位置ac2，再把ac的值存到ac2中
+					emitter.emitRM("LD", regs.ac2, 0, regs.ac2, "indir");
+					emitter.emitRM("ST", regs.ac, 0, regs.ac2, "indir");
+				}
+				if (emitter.TraceCode)
+					emitter.emitComment("----赋值语句结束----");
+				break;
 
 			/*处理输入语句*/
-		case StmtKinds.ReadK:
-			if (emitter.TraceCode)
-				emitter.emitComment("----读语句----");
+			case StmtKinds.ReadK:
+				if (emitter.TraceCode)
+					emitter.emitComment("----读语句----");
 
-			emitter.emitRO("IN", regs.ac, 0, 0, "读一个整数");
-			emitter.emitRM("LDA", regs.ac2, 0, regs.ac, "保存ac到ac2中");
-			findAdd(node);    // 计算变量的绝对偏移，结果存到ac中
-			if (node.table[0].attr.varAttr?.access == AccessType.dir) {
-				// 直接存入
-				emitter.emitRM("ST", regs.ac2, 0, regs.ac, "dir 存入值");
-			}
-			else {
-				// 先取得实际位置，放入ac1
-				emitter.emitRM("LD", regs.ac1, 0, regs.ac, "indir");
-				emitter.emitRM("ST", regs.ac2, 0, regs.ac1, "存入值");
-			}
-			if (emitter.TraceCode)
-				emitter.emitComment("----读语句结束----");
-			break;
+				emitter.emitRO("IN", regs.ac, 0, 0, "读一个整数");
+				emitter.emitRM("LDA", regs.ac2, 0, regs.ac, "保存ac到ac2中");
+				findAdd(node);    // 计算变量的绝对偏移，结果存到ac中
+				if (node.table[0].attr.varAttr?.access == AccessType.dir) {
+					// 直接存入
+					emitter.emitRM("ST", regs.ac2, 0, regs.ac, "dir 存入值");
+				}
+				else {
+					// 先取得实际位置，放入ac1
+					emitter.emitRM("LD", regs.ac1, 0, regs.ac, "indir");
+					emitter.emitRM("ST", regs.ac2, 0, regs.ac1, "存入值");
+				}
+				if (emitter.TraceCode)
+					emitter.emitComment("----读语句结束----");
+				break;
 
 			/* 处理写语句 */
-		case StmtKinds.WriteK:
-			if (emitter.TraceCode)
-				emitter.emitComment("----写语句----");
-			p0 = node.children[0];
-			cGen(p0);   // 生成表达式代码
-			emitter.emitRO("OUT", regs.ac, 0, 0, "输出整数");
-			if (emitter.TraceCode)
-				emitter.emitComment("----写语句结束----");
-			break;
+			case StmtKinds.WriteK:
+				if (emitter.TraceCode)
+					emitter.emitComment("----写语句----");
+				p0 = node.children[0];
+				cGen(p0);   // 生成表达式代码
+				emitter.emitRO("OUT", regs.ac, 0, 0, "输出整数");
+				if (emitter.TraceCode)
+					emitter.emitComment("----写语句结束----");
+				break;
 
 			/* 处理过程调用语句 */
-		case StmtKinds.CallK:
-			p0 = node.children[0];  // 过程名
-			p1 = node.children[1];  // 实参列表
-			pp = p0;
-			if (emitter.TraceCode)
-				emitter.emitComment("----过程调用----");
+			case StmtKinds.CallK:
+				p0 = node.children[0];  // 过程名
+				p1 = node.children[1];  // 实参列表
+				pp = p0;
+				if (emitter.TraceCode)
+					emitter.emitComment("----过程调用----");
 				// 参数传递
 
-			// curParam 保存了形参表
-			curParam = pp.table[0].attr.procAttr!.param;
+				// curParam 保存了形参表
+				curParam = pp.table[0].attr.procAttr!.param;
 
-			let ind: number = 0;
-			// p1 是实参列表
-			while (ind < curParam.length && p1) {
-				// 形参的偏移量
-				formParam = curParam[ind].attr.varAttr!.offset;
+				let ind: number = 0;
+				// p1 是实参列表
+				while (ind < curParam.length && p1) {
+					// 形参的偏移量
+					formParam = curParam[ind].attr.varAttr!.offset;
 
-				// 形参是 indir
-				if (curParam[ind].attr.varAttr!.access == AccessType.indir)
-				// 实参是值参 dir
-					if (p1.table[0].attr.varAttr!.access == AccessType.dir) {
-						findAdd(p1);    // 计算实参的绝对地址，结果存到ac中
-						// 将实参地址传入currentAR的形参单元中
-						emitter.emitRM("ST", regs.ac, formParam, regs.top, "存入 actParam");
-					}
-					else {
-						// 实参是变量 此时将实参的单元内容传送入currentAR的行参单元中
-						findAdd(p1);    // 计算实参的绝对地址，结果存到ac中
-						emitter.emitRM("LD", regs.ac, 0, regs.ac, "取实参地址");
-						emitter.emitRM("ST", regs.ac, formParam, regs.top, "存入 actParam");
-					}
-				else {
-					// 形参是dir
-					p1 = p1 as SymbolNodeExpK;
-					switch (p1.subKind) {
-					// 数值或表达式，直接送值
-					case ExpKinds.OpK:
-					case ExpKinds.ConstK:
-						// ac中存有表达式的值
-						genExp(p1);
-						emitter.emitRM("ST", regs.ac, formParam, regs.top, "formal and act link");
-						break;
-						// 变量，送地址
-					case ExpKinds.VariK:
-						findAdd(p1);    // 计算实参的绝对地址，结果存到ac中
-						formParam = curParam[ind].attr.varAttr?.offset!; // 形参的偏移量
-						// 变量是dir
-						if (p1.table[0].attr.varAttr?.access == AccessType.dir) {
-							// ac是绝对地址，先找到其存储单元
-							emitter.emitRM("LD", regs.ac2, 0, regs.ac, "dir");
-							emitter.emitRM("ST", regs.ac2, formParam, regs.top, "formal and act link");
+					// 形参是 indir
+					if (curParam[ind].attr.varAttr!.access == AccessType.indir)
+						// 实参是值参 dir
+						if (p1.table[0].attr.varAttr!.access == AccessType.dir) {
+							findAdd(p1);    // 计算实参的绝对地址，结果存到ac中
+							// 将实参地址传入currentAR的形参单元中
+							emitter.emitRM("ST", regs.ac, formParam, regs.top, "存入 actParam");
 						}
 						else {
-							// 变量是indir，以ac中内容为绝对地址放到ac2，再以ac2中内容作为绝对地址
-							emitter.emitRM("LD", regs.ac2, 0, regs.ac, "indir");
-							emitter.emitRM("LD", regs.ac2, 0, regs.ac2, "");
-							emitter.emitRM("ST", regs.ac2, formParam, regs.top, "formal and act link");
+							// 实参是变量 此时将实参的单元内容传送入currentAR的行参单元中
+							findAdd(p1);    // 计算实参的绝对地址，结果存到ac中
+							emitter.emitRM("LD", regs.ac, 0, regs.ac, "取实参地址");
+							emitter.emitRM("ST", regs.ac, formParam, regs.top, "存入 actParam");
 						}
-						break;
-					}// switch
-				}// else
-				ind++;
-				p1 = p1.sibling!;
-			}// while
+					else {
+						// 形参是dir
+						p1 = p1 as SymbolNodeExpK;
+						switch (p1.subKind) {
+							// 数值或表达式，直接送值
+							case ExpKinds.OpK:
+							case ExpKinds.ConstK:
+								// ac中存有表达式的值
+								genExp(p1);
+								emitter.emitRM("ST", regs.ac, formParam, regs.top, "formal and act link");
+								break;
+							// 变量，送地址
+							case ExpKinds.VariK:
+								findAdd(p1);    // 计算实参的绝对地址，结果存到ac中
+								formParam = curParam[ind].attr.varAttr?.offset!; // 形参的偏移量
+								// 变量是dir
+								if (p1.table[0].attr.varAttr?.access == AccessType.dir) {
+									// ac是绝对地址，先找到其存储单元
+									emitter.emitRM("LD", regs.ac2, 0, regs.ac, "dir");
+									emitter.emitRM("ST", regs.ac2, formParam, regs.top, "formal and act link");
+								}
+								else {
+									// 变量是indir，以ac中内容为绝对地址放到ac2，再以ac2中内容作为绝对地址
+									emitter.emitRM("LD", regs.ac2, 0, regs.ac, "indir");
+									emitter.emitRM("LD", regs.ac2, 0, regs.ac2, "");
+									emitter.emitRM("ST", regs.ac2, formParam, regs.top, "formal and act link");
+								}
+								break;
+						}// switch
+					}// else
+					ind++;
+					p1 = p1.sibling!;
+				}// while
 
-			// 进入子程序入口
+				// 进入子程序入口
 
-			// 保存旧sp
-			emitter.emitRM("ST", regs.sp, 0, regs.top, "保存旧sp");
-			// 保存寄存器
-			emitter.emitRM("ST", regs.ac, 3, regs.top, "保存ac");
-			emitter.emitRM("ST", regs.ac1, 4, regs.top, "保存ac1");
-			emitter.emitRM("ST", regs.ac2, 5, regs.top, "保存ac2");
-			emitter.emitRM("ST", regs.displayOff, 6, regs.top, "保存displayOff");
-			// 新的displayOff
-			emitter.emitRM("LDC", regs.displayOff, pp.table[0].attr.procAttr!.nOffset, 0, "新的displayOff");
+				// 保存旧sp
+				emitter.emitRM("ST", regs.sp, 0, regs.top, "保存旧sp");
+				// 保存寄存器
+				emitter.emitRM("ST", regs.ac, 3, regs.top, "保存ac");
+				emitter.emitRM("ST", regs.ac1, 4, regs.top, "保存ac1");
+				emitter.emitRM("ST", regs.ac2, 5, regs.top, "保存ac2");
+				emitter.emitRM("ST", regs.displayOff, 6, regs.top, "保存displayOff");
+				// 新的displayOff
+				emitter.emitRM("LDC", regs.displayOff, pp.table[0].attr.procAttr!.nOffset, 0, "新的displayOff");
 
-			//保存返回地址
-			savedLoc1 = emitter.emitSkip(2);
+				//保存返回地址
+				savedLoc1 = emitter.emitSkip(2);
 
-			/// 过程层数
-			emitter.emitRM("LDC", regs.ac1, pp.table[0].attr.procAttr!.level, 0, "保存过程层数");
-			emitter.emitRM("ST", regs.ac1, 2, regs.top, "");
+				/// 过程层数
+				emitter.emitRM("LDC", regs.ac1, pp.table[0].attr.procAttr!.level, 0, "保存过程层数");
+				emitter.emitRM("ST", regs.ac1, 2, regs.top, "");
 
-			// 移动display表
-			for (ss = 0; ss < pp.table[0].attr.procAttr!.level; ss++) {
-				emitter.emitRM("LD", regs.ac2, 6, regs.top, "取原来的displayOff");//取原来的displayOff，存入ac2
-				/*ss要加上当前nOff才是对于sp的偏移*/
-				emitter.emitRM("LDA", regs.ac2, ss, regs.ac2, " old display item");
-				/*regs.ac2中为绝对地址*/
-				emitter.emitRO("ADD", regs.ac2, regs.ac2, regs.sp, "");
-				/*取当前AR中display表的的第ss项,存入ac1中*/
-				emitter.emitRM("LD", regs.ac1, 0, regs.ac2, " fetch display table item");
+				// 移动display表
+				for (ss = 0; ss < pp.table[0].attr.procAttr!.level; ss++) {
+					emitter.emitRM("LD", regs.ac2, 6, regs.top, "取原来的displayOff");//取原来的displayOff，存入ac2
+					/*ss要加上当前nOff才是对于sp的偏移*/
+					emitter.emitRM("LDA", regs.ac2, ss, regs.ac2, " old display item");
+					/*regs.ac2中为绝对地址*/
+					emitter.emitRO("ADD", regs.ac2, regs.ac2, regs.sp, "");
+					/*取当前AR中display表的的第ss项,存入ac1中*/
+					emitter.emitRM("LD", regs.ac1, 0, regs.ac2, " fetch display table item");
 
-				/*当前AR的displayOff*/
-				emitter.emitRM("LDA", regs.ac2, ss, regs.displayOff, " current display item");
-				/*regs.ac2中为绝对地址*/
-				emitter.emitRO("ADD", regs.ac2, regs.ac2, regs.top, "");
-				/*将ac1中的内容送入regs.ac2所指地址中*/
-				emitter.emitRM("ST", regs.ac1, 0, regs.ac2, " send display table item");
-			}
-			/*在display表中的最上层填写本层的sp*/
-			/*ac2中存储的为display表最上层的相对off*/
-			emitter.emitRM("LDA", regs.ac2, pp.table[0].attr.procAttr!.level, regs.displayOff, " current sp in display");
-			emitter.emitRO("ADD", regs.ac2, regs.top, regs.ac2, " absolute off");
-			emitter.emitRM("ST", regs.top, 0, regs.ac2, " input value");
-			/*修改sp和top*/
-			emitter.emitRM("LDA", regs.sp, 0, regs.top, " new sp value");
-			emitter.emitRM("LDA", regs.top, pp.table[0].attr.procAttr!.mOffset, regs.top, " new top value");
+					/*当前AR的displayOff*/
+					emitter.emitRM("LDA", regs.ac2, ss, regs.displayOff, " current display item");
+					/*regs.ac2中为绝对地址*/
+					emitter.emitRO("ADD", regs.ac2, regs.ac2, regs.top, "");
+					/*将ac1中的内容送入regs.ac2所指地址中*/
+					emitter.emitRM("ST", regs.ac1, 0, regs.ac2, " send display table item");
+				}
+				/*在display表中的最上层填写本层的sp*/
+				/*ac2中存储的为display表最上层的相对off*/
+				emitter.emitRM("LDA", regs.ac2, pp.table[0].attr.procAttr!.level, regs.displayOff, " current sp in display");
+				emitter.emitRO("ADD", regs.ac2, regs.top, regs.ac2, " absolute off");
+				emitter.emitRM("ST", regs.top, 0, regs.ac2, " input value");
+				/*修改sp和top*/
+				emitter.emitRM("LDA", regs.sp, 0, regs.top, " new sp value");
+				emitter.emitRM("LDA", regs.top, pp.table[0].attr.procAttr!.mOffset, regs.top, " new top value");
 
-			/*回填返回地址*/
-			currentLoc = emitter.emitSkip(0) + 1;
-			emitter.emitBackup(savedLoc1);
-			emitter.emitRM("LDC", regs.ac1, currentLoc, 0, " save return address");
-			emitter.emitRM("ST", regs.ac1, 1, regs.top, "");
-			emitter.emitRestore();
+				/*回填返回地址*/
+				currentLoc = emitter.emitSkip(0) + 1;
+				emitter.emitBackup(savedLoc1);
+				emitter.emitRM("LDC", regs.ac1, currentLoc, 0, " save return address");
+				emitter.emitRM("ST", regs.ac1, 1, regs.top, "");
+				emitter.emitRestore();
 
-			/*转向子程序*/
-			emitter.emitRM("LDC", regs.pc, pp.table[0].attr.procAttr!.procEntry, 0, " procedure entry ");
+				/*转向子程序*/
+				emitter.emitRM("LDC", regs.pc, pp.table[0].attr.procAttr!.procEntry, 0, " procedure entry ");
 
-			// 子程序出口
+				// 子程序出口
 
-			/*恢复寄存器值*/
-			emitter.emitRM("LD", regs.ac, 3, regs.sp, " resume ac");
-			emitter.emitRM("LD", regs.ac1, 4, regs.sp, " resume ac1");
-			emitter.emitRM("LD", regs.ac2, 5, regs.sp, " resume ac2");
-			emitter.emitRM("LD", regs.displayOff, 6, regs.sp, " resume nOff");
+				/*恢复寄存器值*/
+				emitter.emitRM("LD", regs.ac, 3, regs.sp, " resume ac");
+				emitter.emitRM("LD", regs.ac1, 4, regs.sp, " resume ac1");
+				emitter.emitRM("LD", regs.ac2, 5, regs.sp, " resume ac2");
+				emitter.emitRM("LD", regs.displayOff, 6, regs.sp, " resume nOff");
 
-			/*恢复sp和top值*/
-			emitter.emitRM("LDA", regs.top, 0, regs.sp, " resume top");
-			emitter.emitRM("LD", regs.sp, 0, regs.sp, " resume sp");
+				/*恢复sp和top值*/
+				emitter.emitRM("LDA", regs.top, 0, regs.sp, " resume top");
+				emitter.emitRM("LD", regs.sp, 0, regs.sp, " resume sp");
 
-			break;
-		case StmtKinds.ReturnK:
-			break;
-		default:
-			break;
+				break;
+			case StmtKinds.ReturnK:
+				break;
+			default:
+				break;
 		}// switch
 	}// genStmt
 
@@ -390,153 +389,153 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 		/* 对语法树节点的表达式类型细分处理 */
 		switch (node.subKind) {
 
-		/* 语法树节点tree为ConstK表达式类型 */
-		case ExpKinds.ConstK:
+			/* 语法树节点tree为ConstK表达式类型 */
+			case ExpKinds.ConstK:
 
-			/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,常数部分开始 */
-			if (emitter.TraceCode) emitter.emitComment("-> Const");
+				/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,常数部分开始 */
+				if (emitter.TraceCode) emitter.emitComment("-> 语法树节点 常量 Const");
 
-			/* 生成载入常量指令,载入常量到累加器ac */
-			emitter.emitRM("LDC", regs.ac, node.attr.val!, 0, "load const");
+				/* 生成载入常量指令,载入常量到累加器ac */
+				emitter.emitRM("LDC", regs.ac, node.attr.val!, 0, "load const");
 
-			/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,常数部分结束 */
-			if (emitter.TraceCode) emitter.emitComment("<- Const");
-			break;
+				/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,常数部分结束 */
+				if (emitter.TraceCode) emitter.emitComment("<- Const");
+				break;
 
 
 			/* 语法树节点tree为IdK表达式类型 */
-		case ExpKinds.VariK:
-			/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,标注标识符开始 */
-			if (emitter.TraceCode) emitter.emitComment("-> Id");
+			case ExpKinds.VariK:
+				/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,标注标识符开始 */
+				if (emitter.TraceCode) emitter.emitComment("-> 语法树节点 标识符 Id");
 
-			findAdd(node);
-			/*其中ac返回的是基本类型变量、域变量或下标变量的绝对偏移*/
+				findAdd(node);
+				/*其中ac返回的是基本类型变量、域变量或下标变量的绝对偏移*/
 
-			if (node.table[0].attr.varAttr?.access == AccessType.indir) {
-				/*地址*/
-				/*取值，作为地址*/
-				emitter.emitRM("LD", regs.ac1, 0, regs.ac, "indir load id value");
-				/*ac1中为地址值*/
+				if (node.table[0].attr.varAttr?.access == AccessType.indir) {
+					/*地址*/
+					/*取值，作为地址*/
+					emitter.emitRM("LD", regs.ac1, 0, regs.ac, "indir load id value");
+					/*ac1中为地址值*/
 
-				/*按地址取单元内容*/
-				emitter.emitRM("LD", regs.ac, 0, regs.ac1, "");
-			}
-			else {
-				/*值*/
-				/* 写入数值载入指令,载入变量标识符的值*/
-				emitter.emitRM("LD", regs.ac, 0, regs.ac, "load id value");
-			}
-			/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,标注标识符结束 */
+					/*按地址取单元内容*/
+					emitter.emitRM("LD", regs.ac, 0, regs.ac1, "");
+				}
+				else {
+					/*值*/
+					/* 写入数值载入指令,载入变量标识符的值*/
+					emitter.emitRM("LD", regs.ac, 0, regs.ac, "load id value");
+				}
+				/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,标注标识符结束 */
 
-			if (emitter.TraceCode) emitter.emitComment("<- Id");
-			break;
+				if (emitter.TraceCode) emitter.emitComment("<- Id");
+				break;
 
 
 			/* 语法树节点tree为OpK表达式类型 */
-		case ExpKinds.OpK:
+			case ExpKinds.OpK:
 
-			/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,标注操作开始 */
-			if (emitter.TraceCode) emitter.emitComment("-> Op");
+				/* 如果代码生成追踪标志TraceCode为TRUE,写入注释,标注操作开始 */
+				if (emitter.TraceCode) emitter.emitComment("-> 语法树节点 操作符 OP");
 
-			/* 语法树节点tree第一子节点为左操作数,赋给p1 */
-			const p1 = node.children[0];
+				/* 语法树节点tree第一子节点为左操作数,赋给p1 */
+				const p1 = node.children[0];
 
-			/* 语法树节点tree第二子节点为右操作数,赋给p2 */
-			const p2 = node.children[1];
+				/* 语法树节点tree第二子节点为右操作数,赋给p2 */
+				const p2 = node.children[1];
 
-			/* 对第一子节点递归调用函数cGen(),为左操作数生成目标代码 */
-			cGen(p1);
+				/* 对第一子节点递归调用函数cGen(),为左操作数生成目标代码 */
+				cGen(p1);
 
-			/* 生成单元设置指令,在临时数据存储区中压入左操作数 */
-			emitter.emitRM("ST", regs.ac, tmpOffset--, regs.mp, "op: push left");
+				/* 生成单元设置指令,在临时数据存储区中压入左操作数 */
+				emitter.emitRM("ST", regs.ac, tmpOffset--, regs.mp, "op: push left");
 
-			/* 对第二子节点递归调用函数cGen(),为右操作数生成目标代码 */
-			cGen(p2);
+				/* 对第二子节点递归调用函数cGen(),为右操作数生成目标代码 */
+				cGen(p2);
 
-			/* 生成数值载入指令,从临时数据存储区中载入左操作数 */
-			emitter.emitRM("LD", regs.ac1, ++tmpOffset, regs.mp, "op: load left");
+				/* 生成数值载入指令,从临时数据存储区中载入左操作数 */
+				emitter.emitRM("LD", regs.ac1, ++tmpOffset, regs.mp, "op: load left");
 
-			/* 对语法树节点t的成员运算符attr.op分类处理 */
-			switch (node.attr.op) {
+				/* 对语法树节点t的成员运算符attr.op分类处理 */
+				switch (node.attr.op) {
 
-			/* 语法树节点成员运算符为PLUS,生成加法指令 */
-			case ExpOp.PLUS:
-				emitter.emitRO("ADD", regs.ac, regs.ac1, regs.ac, "op +");
+					/* 语法树节点成员运算符为PLUS,生成加法指令 */
+					case ExpOp.PLUS:
+						emitter.emitRO("ADD", regs.ac, regs.ac1, regs.ac, "op +");
+						break;
+
+					/* 语法树节点成员运算符为MINUS,生成减法指令 */
+					case ExpOp.MINUS:
+						emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op -");
+						break;
+
+					/* 语法树节点成员操作符为TIMES,写入乘法指令 */
+					case ExpOp.TIMES:
+						emitter.emitRO("MUL", regs.ac, regs.ac1, regs.ac, "op *");
+						break;
+
+					/* 语法树节点成员操作符为OVER,写入除法指令 */
+					case ExpOp.OVER:
+						emitter.emitRO("DIV", regs.ac, regs.ac1, regs.ac, "op /");
+						break;
+
+
+					/* 语法树节点成员操作符为LT,写入相应的指令序列 */
+
+					/* 如果为真，结果为1；否则结果为0 */
+					case ExpOp.LT:
+
+						/* 写入减指令,将(左-右)操作数相减,结果送累加器ac */
+						emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op <");
+
+						/* 写入判断跳转指令,如果累加器ac的值小于0, *
+										 * 则代码指令指示器跳过两条指令    */
+						emitter.emitRM("JLT", regs.ac, 2, regs.pc, "br if true");
+
+						/* 写入载入常量指令,将累加器ac赋值为0 */
+						emitter.emitRM("LDC", regs.ac, 0, regs.ac, "false case");
+
+						/* 写入数值载入指令,代码指令指示器pc跳过下一条指令 */
+						emitter.emitRM("LDA", regs.pc, 1, regs.pc, "unconditional jmp");
+
+						/* 写入载入常量指令,将累加器ac赋值为1 */
+						emitter.emitRM("LDC", regs.ac, 1, regs.ac, "true case");
+						break;
+
+
+					/* 语法树节点成员操作符为EQ,写入相应的指令序列 */
+					/* 如果为真，结果为1；否则结果为0 */
+					case ExpOp.EQ:
+
+						/* 写入减法指令,将左,右操作数相减,结果送累加器ac */
+						emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op ==");
+
+						/* 写入判断跳转指令,如果累加器ac等于0, *
+										 * 代码指令指示器pc跳过两条指令   */
+						emitter.emitRM("JEQ", regs.ac, 2, regs.pc, "br if true");
+
+						/* 写入载入常量指令,将累加器ac赋值为0 */
+						emitter.emitRM("LDC", regs.ac, 0, regs.ac, "false case");
+
+						/* 写入数值载入指令,代码指令指示器pc跳过一条指令 */
+						emitter.emitRM("LDA", regs.pc, 1, regs.pc, "unconditional jmp");
+
+						/* 写入载入常量指令,将累加器ac赋值为1 */
+						emitter.emitRM("LDC", regs.ac, 1, regs.ac, "true case");
+						break;
+
+					/* 其他未知运算符,写入注释,标注未知运算符信息 */
+					default:
+						emitter.emitComment("BUG: Unknown operator");
+						break;
+
+				}
+
+				/* 如果代码生成追踪标志TraceCode为TRUE,写入注释信息,标注操作结束 */
+				if (emitter.TraceCode) emitter.emitComment("<- Op");
 				break;
 
-				/* 语法树节点成员运算符为MINUS,生成减法指令 */
-			case ExpOp.MINUS:
-				emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op -");
-				break;
-
-				/* 语法树节点成员操作符为TIMES,写入乘法指令 */
-			case ExpOp.TIMES:
-				emitter.emitRO("MUL", regs.ac, regs.ac1, regs.ac, "op *");
-				break;
-
-				/* 语法树节点成员操作符为OVER,写入除法指令 */
-			case ExpOp.OVER:
-				emitter.emitRO("DIV", regs.ac, regs.ac1, regs.ac, "op /");
-				break;
-
-
-				/* 语法树节点成员操作符为LT,写入相应的指令序列 */
-
-				/* 如果为真，结果为1；否则结果为0 */
-			case ExpOp.LT:
-
-				/* 写入减指令,将(左-右)操作数相减,结果送累加器ac */
-				emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op <");
-
-				/* 写入判断跳转指令,如果累加器ac的值小于0, *
-								 * 则代码指令指示器跳过两条指令    */
-				emitter.emitRM("JLT", regs.ac, 2, regs.pc, "br if true");
-
-				/* 写入载入常量指令,将累加器ac赋值为0 */
-				emitter.emitRM("LDC", regs.ac, 0, regs.ac, "false case");
-
-				/* 写入数值载入指令,代码指令指示器pc跳过下一条指令 */
-				emitter.emitRM("LDA", regs.pc, 1, regs.pc, "unconditional jmp");
-
-				/* 写入载入常量指令,将累加器ac赋值为1 */
-				emitter.emitRM("LDC", regs.ac, 1, regs.ac, "true case");
-				break;
-
-
-				/* 语法树节点成员操作符为EQ,写入相应的指令序列 */
-				/* 如果为真，结果为1；否则结果为0 */
-			case ExpOp.EQ:
-
-				/* 写入减法指令,将左,右操作数相减,结果送累加器ac */
-				emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op ==");
-
-				/* 写入判断跳转指令,如果累加器ac等于0, *
-								 * 代码指令指示器pc跳过两条指令   */
-				emitter.emitRM("JEQ", regs.ac, 2, regs.pc, "br if true");
-
-				/* 写入载入常量指令,将累加器ac赋值为0 */
-				emitter.emitRM("LDC", regs.ac, 0, regs.ac, "false case");
-
-				/* 写入数值载入指令,代码指令指示器pc跳过一条指令 */
-				emitter.emitRM("LDA", regs.pc, 1, regs.pc, "unconditional jmp");
-
-				/* 写入载入常量指令,将累加器ac赋值为1 */
-				emitter.emitRM("LDC", regs.ac, 1, regs.ac, "true case");
-				break;
-
-				/* 其他未知运算符,写入注释,标注未知运算符信息 */
 			default:
-				emitter.emitComment("BUG: Unknown operator");
 				break;
-
-			}
-
-			/* 如果代码生成追踪标志TraceCode为TRUE,写入注释信息,标注操作结束 */
-			if (emitter.TraceCode) emitter.emitComment("<- Op");
-			break;
-
-		default:
-			break;
 		}
 	}
 
@@ -589,15 +588,15 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 	function cGen(node: SymbolNode) {
 		if (node) {
 			switch (node.kind) {
-			case SymbolNodeKind.StmtK:
-				genStmt(node);
-				break;
-			case SymbolNodeKind.ExpK:
-				genExp(node);
-				break;
+				case SymbolNodeKind.StmtK:
+					genStmt(node);
+					break;
+				case SymbolNodeKind.ExpK:
+					genExp(node);
+					break;
 
-			default:
-				break;
+				default:
+					break;
 			}
 			cGen(node.sibling!);
 		}
@@ -644,9 +643,9 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 		emitter.emitRM("LDC", regs.ac1, 0, 0, "将ac1置0");
 		emitter.emitRM("LDC", regs.ac2, 0, 0, "将ac2置0");
 		// sp
-		emitter.emitRM("LDC", regs.ac, 0, regs.sp, "将sp置0");
+		emitter.emitRM("ST", regs.ac, 0, regs.sp, "将sp置0");
 		// 确定displayOff
-		emitter.emitRM("LDA", regs.displayOff, mainOff, regs.sp, "mian displayOff");
+		emitter.emitRM("LDA", regs.displayOff, MainOffset, regs.sp, "mian displayOff");
 		// 填写display表，只有主程序本层的sp(0)
 		emitter.emitRM("ST", regs.ac, 0, regs.displayOff, "main display");
 		// 填写top
@@ -654,10 +653,8 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 
 		// 主程序体代码生成
 		let t2 = root.children[2].children[0];
-		while (t2) {
+		if (t2)
 			cGen(t2);
-			t2 = t2.sibling!;
-		}
 
 		// 处理完毕主程序，退出AR
 		emitter.emitComment("----主程序结束----");

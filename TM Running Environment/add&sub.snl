@@ -1,0 +1,341 @@
+* SNL目标代码
+
+* 标准预备工作:
+
+0:  LD  3,0(0)	*从0地址处载入最大地址值
+
+1:  ST  0,0(0)	*清空0地址单元内容
+
+* 预备工作结束
+
+* ----过程q----
+
+* ----赋值语句----
+
+3:  LDC  0,8(0)	* base type var relative address
+
+4:  LDA  1,1(4)	*var process
+
+5:  ADD  1,1,6	*var absolute address
+
+6:  LD  1,0(1)	*var sp
+
+7:  ADD  0,0,1	* var absolute off
+
+8:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 标识符 Id
+
+9:  LDC  0,7(0)	* base type var relative address
+
+10:  LDA  1,1(4)	*var process
+
+11:  ADD  1,1,6	*var absolute address
+
+12:  LD  1,0(1)	*var sp
+
+13:  ADD  0,0,1	* var absolute off
+
+14:  LD  0,0(0)	*load id value
+
+* <- Id
+
+15:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----写语句----
+
+* -> 语法树节点 标识符 Id
+
+16:  LDC  0,8(0)	* base type var relative address
+
+17:  LDA  1,1(4)	*var process
+
+18:  ADD  1,1,6	*var absolute address
+
+19:  LD  1,0(1)	*var sp
+
+20:  ADD  0,0,1	* var absolute off
+
+21:  LD  0,0(0)	*load id value
+
+* <- Id
+
+22:  OUT  0,0,0	*输出整数
+
+* ----写语句结束----
+
+23:  LD  2,1(6)	*退出AR
+
+24:  LDA  7,0(2)	*
+
+* ----过程q结束----
+
+2:  LDA  7,25(0)	*主程序入口
+
+* ----主程序----
+
+25:  LDC  0,0(0)	*将ac置0
+
+26:  LDC  1,0(0)	*将ac1置0
+
+27:  LDC  2,0(0)	*将ac2置0
+
+28:  ST  0,0(6)	*将sp置0
+
+29:  LDA  4,2(6)	*mian displayOff
+
+30:  ST  0,0(4)	*main display
+
+31:  LDA  5,1(4)	*main top
+
+* ----读语句----
+
+32:  IN  0,0,0	*读一个整数
+
+33:  LDA  2,0(0)	*保存ac到ac2中
+
+34:  LDC  0,0(0)	* base type var relative address
+
+35:  LDA  1,0(4)	*var process
+
+36:  ADD  1,1,6	*var absolute address
+
+37:  LD  1,0(1)	*var sp
+
+38:  ADD  0,0,1	* var absolute off
+
+39:  ST  2,0(0)	*dir 存入值
+
+* ----读语句结束----
+
+* ----if语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+40:  LDC  0,0(0)	* base type var relative address
+
+41:  LDA  1,0(4)	*var process
+
+42:  ADD  1,1,6	*var absolute address
+
+43:  LD  1,0(1)	*var sp
+
+44:  ADD  0,0,1	* var absolute off
+
+45:  LD  0,0(0)	*load id value
+
+* <- Id
+
+46:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+47:  LDC  0,10(0)	*load const
+
+* <- Const
+
+48:  LD  1,0(3)	*op: load left
+
+49:  SUB  0,1,0	*op <
+
+50:  JLT  0,2(7)	*br if true
+
+51:  LDC  0,0(0)	*false case
+
+52:  LDA  7,1(7)	*unconditional jmp
+
+53:  LDC  0,1(0)	*true case
+
+* <- Op
+
+* if: jump to else belongs here
+
+* ----赋值语句----
+
+55:  LDC  0,0(0)	* base type var relative address
+
+56:  LDA  1,0(4)	*var process
+
+57:  ADD  1,1,6	*var absolute address
+
+58:  LD  1,0(1)	*var sp
+
+59:  ADD  0,0,1	* var absolute off
+
+60:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+61:  LDC  0,0(0)	* base type var relative address
+
+62:  LDA  1,0(4)	*var process
+
+63:  ADD  1,1,6	*var absolute address
+
+64:  LD  1,0(1)	*var sp
+
+65:  ADD  0,0,1	* var absolute off
+
+66:  LD  0,0(0)	*load id value
+
+* <- Id
+
+67:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+68:  LDC  0,10(0)	*load const
+
+* <- Const
+
+69:  LD  1,0(3)	*op: load left
+
+70:  ADD  0,1,0	*op +
+
+* <- Op
+
+71:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* if: jump to end belongs here
+
+54:  JEQ  0,17(7)	*if: jmp to else
+
+* ----赋值语句----
+
+73:  LDC  0,0(0)	* base type var relative address
+
+74:  LDA  1,0(4)	*var process
+
+75:  ADD  1,1,6	*var absolute address
+
+76:  LD  1,0(1)	*var sp
+
+77:  ADD  0,0,1	* var absolute off
+
+78:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+79:  LDC  0,0(0)	* base type var relative address
+
+80:  LDA  1,0(4)	*var process
+
+81:  ADD  1,1,6	*var absolute address
+
+82:  LD  1,0(1)	*var sp
+
+83:  ADD  0,0,1	* var absolute off
+
+84:  LD  0,0(0)	*load id value
+
+* <- Id
+
+85:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+86:  LDC  0,10(0)	*load const
+
+* <- Const
+
+87:  LD  1,0(3)	*op: load left
+
+88:  SUB  0,1,0	*op -
+
+* <- Op
+
+89:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+72:  LDA  7,16(7)	*jmp to end
+
+* ----if语句结束----
+
+* ----过程调用----
+
+90:  LDC  0,0(0)	* base type var relative address
+
+91:  LDA  1,0(4)	*var process
+
+92:  ADD  1,1,6	*var absolute address
+
+93:  LD  1,0(1)	*var sp
+
+94:  ADD  0,0,1	* var absolute off
+
+95:  LD  2,0(0)	*dir
+
+96:  ST  2,7(5)	*formal and act link
+
+97:  ST  6,0(5)	*保存旧sp
+
+98:  ST  0,3(5)	*保存ac
+
+99:  ST  1,4(5)	*保存ac1
+
+100:  ST  2,5(5)	*保存ac2
+
+101:  ST  4,6(5)	*保存displayOff
+
+102:  LDC  4,9(0)	*新的displayOff
+
+105:  LDC  1,1(0)	*保存过程层数
+
+106:  ST  1,2(5)	*
+
+107:  LD  2,6(5)	*取原来的displayOff
+
+108:  LDA  2,0(2)	* old display item
+
+109:  ADD  2,2,6	*
+
+110:  LD  1,0(2)	* fetch display table item
+
+111:  LDA  2,0(4)	* current display item
+
+112:  ADD  2,2,5	*
+
+113:  ST  1,0(2)	* send display table item
+
+114:  LDA  2,1(4)	* current sp in display
+
+115:  ADD  2,5,2	* absolute off
+
+116:  ST  5,0(2)	* input value
+
+117:  LDA  6,0(5)	* new sp value
+
+118:  LDA  5,11(5)	* new top value
+
+103:  LDC  1,120(0)	* save return address
+
+104:  ST  1,1(5)	*
+
+119:  LDC  7,3(0)	* procedure entry 
+
+120:  LD  0,3(6)	* resume ac
+
+121:  LD  1,4(6)	* resume ac1
+
+122:  LD  2,5(6)	* resume ac2
+
+123:  LD  4,6(6)	* resume nOff
+
+124:  LDA  5,0(6)	* resume top
+
+125:  LD  6,0(6)	* resume sp
+
+* ----主程序结束----
+
+126:  HALT  0,0,0	*

@@ -1,0 +1,1257 @@
+* SNL目标代码
+
+* 标准预备工作:
+
+0:  LD  3,0(0)	*从0地址处载入最大地址值
+
+1:  ST  0,0(0)	*清空0地址单元内容
+
+* 预备工作结束
+
+* ----过程q----
+
+* ----赋值语句----
+
+3:  LDC  0,8(0)	* base type var relative address
+
+4:  LDA  1,1(4)	*var process
+
+5:  ADD  1,1,6	*var absolute address
+
+6:  LD  1,0(1)	*var sp
+
+7:  ADD  0,0,1	* var absolute off
+
+8:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 常量 Const
+
+9:  LDC  0,1(0)	*load const
+
+* <- Const
+
+10:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----while语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+11:  LDC  0,8(0)	* base type var relative address
+
+12:  LDA  1,1(4)	*var process
+
+13:  ADD  1,1,6	*var absolute address
+
+14:  LD  1,0(1)	*var sp
+
+15:  ADD  0,0,1	* var absolute off
+
+16:  LD  0,0(0)	*load id value
+
+* <- Id
+
+17:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 标识符 Id
+
+18:  LDC  0,7(0)	* base type var relative address
+
+19:  LDA  1,1(4)	*var process
+
+20:  ADD  1,1,6	*var absolute address
+
+21:  LD  1,0(1)	*var sp
+
+22:  ADD  0,0,1	* var absolute off
+
+23:  LD  0,0(0)	*load id value
+
+* <- Id
+
+24:  LD  1,0(3)	*op: load left
+
+25:  SUB  0,1,0	*op <
+
+26:  JLT  0,2(7)	*br if true
+
+27:  LDC  0,0(0)	*false case
+
+28:  LDA  7,1(7)	*unconditional jmp
+
+29:  LDC  0,1(0)	*true case
+
+* <- Op
+
+* while: jump out while
+
+* ----赋值语句----
+
+31:  LDC  0,9(0)	* base type var relative address
+
+32:  LDA  1,1(4)	*var process
+
+33:  ADD  1,1,6	*var absolute address
+
+34:  LD  1,0(1)	*var sp
+
+35:  ADD  0,0,1	* var absolute off
+
+36:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+37:  LDC  0,7(0)	* base type var relative address
+
+38:  LDA  1,1(4)	*var process
+
+39:  ADD  1,1,6	*var absolute address
+
+40:  LD  1,0(1)	*var sp
+
+41:  ADD  0,0,1	* var absolute off
+
+42:  LD  0,0(0)	*load id value
+
+* <- Id
+
+43:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 标识符 Id
+
+44:  LDC  0,8(0)	* base type var relative address
+
+45:  LDA  1,1(4)	*var process
+
+46:  ADD  1,1,6	*var absolute address
+
+47:  LD  1,0(1)	*var sp
+
+48:  ADD  0,0,1	* var absolute off
+
+49:  LD  0,0(0)	*load id value
+
+* <- Id
+
+50:  LD  1,0(3)	*op: load left
+
+51:  SUB  0,1,0	*op -
+
+* <- Op
+
+52:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+53:  LDC  0,1(0)	*load const
+
+* <- Const
+
+54:  LD  1,0(3)	*op: load left
+
+55:  ADD  0,1,0	*op +
+
+* <- Op
+
+56:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----赋值语句----
+
+57:  LDC  0,10(0)	* base type var relative address
+
+58:  LDA  1,1(4)	*var process
+
+59:  ADD  1,1,6	*var absolute address
+
+60:  LD  1,0(1)	*var sp
+
+61:  ADD  0,0,1	* var absolute off
+
+62:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 常量 Const
+
+63:  LDC  0,1(0)	*load const
+
+* <- Const
+
+64:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----while语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+65:  LDC  0,10(0)	* base type var relative address
+
+66:  LDA  1,1(4)	*var process
+
+67:  ADD  1,1,6	*var absolute address
+
+68:  LD  1,0(1)	*var sp
+
+69:  ADD  0,0,1	* var absolute off
+
+70:  LD  0,0(0)	*load id value
+
+* <- Id
+
+71:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 标识符 Id
+
+72:  LDC  0,9(0)	* base type var relative address
+
+73:  LDA  1,1(4)	*var process
+
+74:  ADD  1,1,6	*var absolute address
+
+75:  LD  1,0(1)	*var sp
+
+76:  ADD  0,0,1	* var absolute off
+
+77:  LD  0,0(0)	*load id value
+
+* <- Id
+
+78:  LD  1,0(3)	*op: load left
+
+79:  SUB  0,1,0	*op <
+
+80:  JLT  0,2(7)	*br if true
+
+81:  LDC  0,0(0)	*false case
+
+82:  LDA  7,1(7)	*unconditional jmp
+
+83:  LDC  0,1(0)	*true case
+
+* <- Op
+
+* while: jump out while
+
+* ----if语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+85:  LDC  0,10(0)	* base type var relative address
+
+86:  LDA  1,1(4)	*var process
+
+87:  ADD  1,1,6	*var absolute address
+
+88:  LD  1,0(1)	*var sp
+
+89:  ADD  0,0,1	* var absolute off
+
+90:  LD  0,0(0)	*load id value
+
+* <- Id
+
+91:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+92:  LDC  0,1(0)	*load const
+
+* <- Const
+
+93:  LD  1,0(3)	*op: load left
+
+94:  ADD  0,1,0	*op +
+
+* <- Op
+
+95:  LDC  1,1(0)	*array low bound
+
+96:  SUB  0,0,1	*
+
+97:  LDA  0,3(0)	* array type var relative address
+
+98:  LDA  1,0(4)	*var process
+
+99:  ADD  1,1,6	*var absolute address
+
+100:  LD  1,0(1)	*var sp
+
+101:  ADD  0,0,1	* var absolute off
+
+102:  LD  0,0(0)	*load id value
+
+* <- Id
+
+103:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 标识符 Id
+
+* -> 语法树节点 标识符 Id
+
+104:  LDC  0,10(0)	* base type var relative address
+
+105:  LDA  1,1(4)	*var process
+
+106:  ADD  1,1,6	*var absolute address
+
+107:  LD  1,0(1)	*var sp
+
+108:  ADD  0,0,1	* var absolute off
+
+109:  LD  0,0(0)	*load id value
+
+* <- Id
+
+110:  LDC  1,1(0)	*array low bound
+
+111:  SUB  0,0,1	*
+
+112:  LDA  0,3(0)	* array type var relative address
+
+113:  LDA  1,0(4)	*var process
+
+114:  ADD  1,1,6	*var absolute address
+
+115:  LD  1,0(1)	*var sp
+
+116:  ADD  0,0,1	* var absolute off
+
+117:  LD  0,0(0)	*load id value
+
+* <- Id
+
+118:  LD  1,0(3)	*op: load left
+
+119:  SUB  0,1,0	*op <
+
+120:  JLT  0,2(7)	*br if true
+
+121:  LDC  0,0(0)	*false case
+
+122:  LDA  7,1(7)	*unconditional jmp
+
+123:  LDC  0,1(0)	*true case
+
+* <- Op
+
+* if: jump to else belongs here
+
+* ----赋值语句----
+
+125:  LDC  0,11(0)	* base type var relative address
+
+126:  LDA  1,1(4)	*var process
+
+127:  ADD  1,1,6	*var absolute address
+
+128:  LD  1,0(1)	*var sp
+
+129:  ADD  0,0,1	* var absolute off
+
+130:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 标识符 Id
+
+* -> 语法树节点 标识符 Id
+
+131:  LDC  0,10(0)	* base type var relative address
+
+132:  LDA  1,1(4)	*var process
+
+133:  ADD  1,1,6	*var absolute address
+
+134:  LD  1,0(1)	*var sp
+
+135:  ADD  0,0,1	* var absolute off
+
+136:  LD  0,0(0)	*load id value
+
+* <- Id
+
+137:  LDC  1,1(0)	*array low bound
+
+138:  SUB  0,0,1	*
+
+139:  LDA  0,3(0)	* array type var relative address
+
+140:  LDA  1,0(4)	*var process
+
+141:  ADD  1,1,6	*var absolute address
+
+142:  LD  1,0(1)	*var sp
+
+143:  ADD  0,0,1	* var absolute off
+
+144:  LD  0,0(0)	*load id value
+
+* <- Id
+
+145:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----赋值语句----
+
+* -> 语法树节点 标识符 Id
+
+146:  LDC  0,10(0)	* base type var relative address
+
+147:  LDA  1,1(4)	*var process
+
+148:  ADD  1,1,6	*var absolute address
+
+149:  LD  1,0(1)	*var sp
+
+150:  ADD  0,0,1	* var absolute off
+
+151:  LD  0,0(0)	*load id value
+
+* <- Id
+
+152:  LDC  1,1(0)	*array low bound
+
+153:  SUB  0,0,1	*
+
+154:  LDA  0,3(0)	* array type var relative address
+
+155:  LDA  1,0(4)	*var process
+
+156:  ADD  1,1,6	*var absolute address
+
+157:  LD  1,0(1)	*var sp
+
+158:  ADD  0,0,1	* var absolute off
+
+159:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 标识符 Id
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+160:  LDC  0,10(0)	* base type var relative address
+
+161:  LDA  1,1(4)	*var process
+
+162:  ADD  1,1,6	*var absolute address
+
+163:  LD  1,0(1)	*var sp
+
+164:  ADD  0,0,1	* var absolute off
+
+165:  LD  0,0(0)	*load id value
+
+* <- Id
+
+166:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+167:  LDC  0,1(0)	*load const
+
+* <- Const
+
+168:  LD  1,0(3)	*op: load left
+
+169:  ADD  0,1,0	*op +
+
+* <- Op
+
+170:  LDC  1,1(0)	*array low bound
+
+171:  SUB  0,0,1	*
+
+172:  LDA  0,3(0)	* array type var relative address
+
+173:  LDA  1,0(4)	*var process
+
+174:  ADD  1,1,6	*var absolute address
+
+175:  LD  1,0(1)	*var sp
+
+176:  ADD  0,0,1	* var absolute off
+
+177:  LD  0,0(0)	*load id value
+
+* <- Id
+
+178:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----赋值语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+179:  LDC  0,10(0)	* base type var relative address
+
+180:  LDA  1,1(4)	*var process
+
+181:  ADD  1,1,6	*var absolute address
+
+182:  LD  1,0(1)	*var sp
+
+183:  ADD  0,0,1	* var absolute off
+
+184:  LD  0,0(0)	*load id value
+
+* <- Id
+
+185:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+186:  LDC  0,1(0)	*load const
+
+* <- Const
+
+187:  LD  1,0(3)	*op: load left
+
+188:  ADD  0,1,0	*op +
+
+* <- Op
+
+189:  LDC  1,1(0)	*array low bound
+
+190:  SUB  0,0,1	*
+
+191:  LDA  0,3(0)	* array type var relative address
+
+192:  LDA  1,0(4)	*var process
+
+193:  ADD  1,1,6	*var absolute address
+
+194:  LD  1,0(1)	*var sp
+
+195:  ADD  0,0,1	* var absolute off
+
+196:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 标识符 Id
+
+197:  LDC  0,11(0)	* base type var relative address
+
+198:  LDA  1,1(4)	*var process
+
+199:  ADD  1,1,6	*var absolute address
+
+200:  LD  1,0(1)	*var sp
+
+201:  ADD  0,0,1	* var absolute off
+
+202:  LD  0,0(0)	*load id value
+
+* <- Id
+
+203:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* if: jump to end belongs here
+
+124:  JEQ  0,79(7)	*if: jmp to else
+
+* ----赋值语句----
+
+205:  LDC  0,11(0)	* base type var relative address
+
+206:  LDA  1,1(4)	*var process
+
+207:  ADD  1,1,6	*var absolute address
+
+208:  LD  1,0(1)	*var sp
+
+209:  ADD  0,0,1	* var absolute off
+
+210:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 常量 Const
+
+211:  LDC  0,0(0)	*load const
+
+* <- Const
+
+212:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+204:  LDA  7,7(7)	*jmp to end
+
+* ----if语句结束----
+
+* ----赋值语句----
+
+213:  LDC  0,10(0)	* base type var relative address
+
+214:  LDA  1,1(4)	*var process
+
+215:  ADD  1,1,6	*var absolute address
+
+216:  LD  1,0(1)	*var sp
+
+217:  ADD  0,0,1	* var absolute off
+
+218:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+219:  LDC  0,10(0)	* base type var relative address
+
+220:  LDA  1,1(4)	*var process
+
+221:  ADD  1,1,6	*var absolute address
+
+222:  LD  1,0(1)	*var sp
+
+223:  ADD  0,0,1	* var absolute off
+
+224:  LD  0,0(0)	*load id value
+
+* <- Id
+
+225:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+226:  LDC  0,1(0)	*load const
+
+* <- Const
+
+227:  LD  1,0(3)	*op: load left
+
+228:  ADD  0,1,0	*op +
+
+* <- Op
+
+229:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+230:  LDC  7,65(0)	*jmp back to test
+
+* return to condition expression
+
+84:  JEQ  0,145(7)	*while: jmp out while
+
+* ----赋值语句结束----
+
+* ----赋值语句----
+
+231:  LDC  0,8(0)	* base type var relative address
+
+232:  LDA  1,1(4)	*var process
+
+233:  ADD  1,1,6	*var absolute address
+
+234:  LD  1,0(1)	*var sp
+
+235:  ADD  0,0,1	* var absolute off
+
+236:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+237:  LDC  0,8(0)	* base type var relative address
+
+238:  LDA  1,1(4)	*var process
+
+239:  ADD  1,1,6	*var absolute address
+
+240:  LD  1,0(1)	*var sp
+
+241:  ADD  0,0,1	* var absolute off
+
+242:  LD  0,0(0)	*load id value
+
+* <- Id
+
+243:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+244:  LDC  0,1(0)	*load const
+
+* <- Const
+
+245:  LD  1,0(3)	*op: load left
+
+246:  ADD  0,1,0	*op +
+
+* <- Op
+
+247:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+248:  LDC  7,11(0)	*jmp back to test
+
+* return to condition expression
+
+30:  JEQ  0,217(7)	*while: jmp out while
+
+* ----赋值语句结束----
+
+249:  LD  2,1(6)	*退出AR
+
+250:  LDA  7,0(2)	*
+
+* ----过程q结束----
+
+2:  LDA  7,251(0)	*主程序入口
+
+* ----主程序----
+
+251:  LDC  0,0(0)	*将ac置0
+
+252:  LDC  1,0(0)	*将ac1置0
+
+253:  LDC  2,0(0)	*将ac2置0
+
+254:  ST  0,0(6)	*将sp置0
+
+255:  LDA  4,23(6)	*mian displayOff
+
+256:  ST  0,0(4)	*main display
+
+257:  LDA  5,1(4)	*main top
+
+* ----读语句----
+
+258:  IN  0,0,0	*读一个整数
+
+259:  LDA  2,0(0)	*保存ac到ac2中
+
+260:  LDC  0,2(0)	* base type var relative address
+
+261:  LDA  1,0(4)	*var process
+
+262:  ADD  1,1,6	*var absolute address
+
+263:  LD  1,0(1)	*var sp
+
+264:  ADD  0,0,1	* var absolute off
+
+265:  ST  2,0(0)	*dir 存入值
+
+* ----读语句结束----
+
+* ----赋值语句----
+
+266:  LDC  0,0(0)	* base type var relative address
+
+267:  LDA  1,0(4)	*var process
+
+268:  ADD  1,1,6	*var absolute address
+
+269:  LD  1,0(1)	*var sp
+
+270:  ADD  0,0,1	* var absolute off
+
+271:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 常量 Const
+
+272:  LDC  0,1(0)	*load const
+
+* <- Const
+
+273:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----while语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+274:  LDC  0,0(0)	* base type var relative address
+
+275:  LDA  1,0(4)	*var process
+
+276:  ADD  1,1,6	*var absolute address
+
+277:  LD  1,0(1)	*var sp
+
+278:  ADD  0,0,1	* var absolute off
+
+279:  LD  0,0(0)	*load id value
+
+* <- Id
+
+280:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+281:  LDC  0,2(0)	* base type var relative address
+
+282:  LDA  1,0(4)	*var process
+
+283:  ADD  1,1,6	*var absolute address
+
+284:  LD  1,0(1)	*var sp
+
+285:  ADD  0,0,1	* var absolute off
+
+286:  LD  0,0(0)	*load id value
+
+* <- Id
+
+287:  ST  0,-1(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+288:  LDC  0,1(0)	*load const
+
+* <- Const
+
+289:  LD  1,-1(3)	*op: load left
+
+290:  ADD  0,1,0	*op +
+
+* <- Op
+
+291:  LD  1,0(3)	*op: load left
+
+292:  SUB  0,1,0	*op <
+
+293:  JLT  0,2(7)	*br if true
+
+294:  LDC  0,0(0)	*false case
+
+295:  LDA  7,1(7)	*unconditional jmp
+
+296:  LDC  0,1(0)	*true case
+
+* <- Op
+
+* while: jump out while
+
+* ----读语句----
+
+298:  IN  0,0,0	*读一个整数
+
+299:  LDA  2,0(0)	*保存ac到ac2中
+
+300:  LDC  0,1(0)	* base type var relative address
+
+301:  LDA  1,0(4)	*var process
+
+302:  ADD  1,1,6	*var absolute address
+
+303:  LD  1,0(1)	*var sp
+
+304:  ADD  0,0,1	* var absolute off
+
+305:  ST  2,0(0)	*dir 存入值
+
+* ----读语句结束----
+
+* ----赋值语句----
+
+* -> 语法树节点 标识符 Id
+
+306:  LDC  0,0(0)	* base type var relative address
+
+307:  LDA  1,0(4)	*var process
+
+308:  ADD  1,1,6	*var absolute address
+
+309:  LD  1,0(1)	*var sp
+
+310:  ADD  0,0,1	* var absolute off
+
+311:  LD  0,0(0)	*load id value
+
+* <- Id
+
+312:  LDC  1,1(0)	*array low bound
+
+313:  SUB  0,0,1	*
+
+314:  LDA  0,3(0)	* array type var relative address
+
+315:  LDA  1,0(4)	*var process
+
+316:  ADD  1,1,6	*var absolute address
+
+317:  LD  1,0(1)	*var sp
+
+318:  ADD  0,0,1	* var absolute off
+
+319:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 标识符 Id
+
+320:  LDC  0,1(0)	* base type var relative address
+
+321:  LDA  1,0(4)	*var process
+
+322:  ADD  1,1,6	*var absolute address
+
+323:  LD  1,0(1)	*var sp
+
+324:  ADD  0,0,1	* var absolute off
+
+325:  LD  0,0(0)	*load id value
+
+* <- Id
+
+326:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----赋值语句----
+
+327:  LDC  0,0(0)	* base type var relative address
+
+328:  LDA  1,0(4)	*var process
+
+329:  ADD  1,1,6	*var absolute address
+
+330:  LD  1,0(1)	*var sp
+
+331:  ADD  0,0,1	* var absolute off
+
+332:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+333:  LDC  0,0(0)	* base type var relative address
+
+334:  LDA  1,0(4)	*var process
+
+335:  ADD  1,1,6	*var absolute address
+
+336:  LD  1,0(1)	*var sp
+
+337:  ADD  0,0,1	* var absolute off
+
+338:  LD  0,0(0)	*load id value
+
+* <- Id
+
+339:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+340:  LDC  0,1(0)	*load const
+
+* <- Const
+
+341:  LD  1,0(3)	*op: load left
+
+342:  ADD  0,1,0	*op +
+
+* <- Op
+
+343:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+344:  LDC  7,274(0)	*jmp back to test
+
+* return to condition expression
+
+297:  JEQ  0,46(7)	*while: jmp out while
+
+* ----赋值语句结束----
+
+* ----过程调用----
+
+345:  LDC  0,2(0)	* base type var relative address
+
+346:  LDA  1,0(4)	*var process
+
+347:  ADD  1,1,6	*var absolute address
+
+348:  LD  1,0(1)	*var sp
+
+349:  ADD  0,0,1	* var absolute off
+
+350:  LD  2,0(0)	*dir
+
+351:  ST  2,7(5)	*formal and act link
+
+352:  ST  6,0(5)	*保存旧sp
+
+353:  ST  0,3(5)	*保存ac
+
+354:  ST  1,4(5)	*保存ac1
+
+355:  ST  2,5(5)	*保存ac2
+
+356:  ST  4,6(5)	*保存displayOff
+
+357:  LDC  4,12(0)	*新的displayOff
+
+360:  LDC  1,1(0)	*保存过程层数
+
+361:  ST  1,2(5)	*
+
+362:  LD  2,6(5)	*取原来的displayOff
+
+363:  LDA  2,0(2)	* old display item
+
+364:  ADD  2,2,6	*
+
+365:  LD  1,0(2)	* fetch display table item
+
+366:  LDA  2,0(4)	* current display item
+
+367:  ADD  2,2,5	*
+
+368:  ST  1,0(2)	* send display table item
+
+369:  LDA  2,1(4)	* current sp in display
+
+370:  ADD  2,5,2	* absolute off
+
+371:  ST  5,0(2)	* input value
+
+372:  LDA  6,0(5)	* new sp value
+
+373:  LDA  5,14(5)	* new top value
+
+358:  LDC  1,375(0)	* save return address
+
+359:  ST  1,1(5)	*
+
+374:  LDC  7,3(0)	* procedure entry 
+
+375:  LD  0,3(6)	* resume ac
+
+376:  LD  1,4(6)	* resume ac1
+
+377:  LD  2,5(6)	* resume ac2
+
+378:  LD  4,6(6)	* resume nOff
+
+379:  LDA  5,0(6)	* resume top
+
+380:  LD  6,0(6)	* resume sp
+
+* ----赋值语句----
+
+381:  LDC  0,0(0)	* base type var relative address
+
+382:  LDA  1,0(4)	*var process
+
+383:  ADD  1,1,6	*var absolute address
+
+384:  LD  1,0(1)	*var sp
+
+385:  ADD  0,0,1	* var absolute off
+
+386:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 常量 Const
+
+387:  LDC  0,1(0)	*load const
+
+* <- Const
+
+388:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+* ----while语句----
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+389:  LDC  0,0(0)	* base type var relative address
+
+390:  LDA  1,0(4)	*var process
+
+391:  ADD  1,1,6	*var absolute address
+
+392:  LD  1,0(1)	*var sp
+
+393:  ADD  0,0,1	* var absolute off
+
+394:  LD  0,0(0)	*load id value
+
+* <- Id
+
+395:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+396:  LDC  0,2(0)	* base type var relative address
+
+397:  LDA  1,0(4)	*var process
+
+398:  ADD  1,1,6	*var absolute address
+
+399:  LD  1,0(1)	*var sp
+
+400:  ADD  0,0,1	* var absolute off
+
+401:  LD  0,0(0)	*load id value
+
+* <- Id
+
+402:  ST  0,-1(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+403:  LDC  0,1(0)	*load const
+
+* <- Const
+
+404:  LD  1,-1(3)	*op: load left
+
+405:  ADD  0,1,0	*op +
+
+* <- Op
+
+406:  LD  1,0(3)	*op: load left
+
+407:  SUB  0,1,0	*op <
+
+408:  JLT  0,2(7)	*br if true
+
+409:  LDC  0,0(0)	*false case
+
+410:  LDA  7,1(7)	*unconditional jmp
+
+411:  LDC  0,1(0)	*true case
+
+* <- Op
+
+* while: jump out while
+
+* ----写语句----
+
+* -> 语法树节点 标识符 Id
+
+* -> 语法树节点 标识符 Id
+
+413:  LDC  0,0(0)	* base type var relative address
+
+414:  LDA  1,0(4)	*var process
+
+415:  ADD  1,1,6	*var absolute address
+
+416:  LD  1,0(1)	*var sp
+
+417:  ADD  0,0,1	* var absolute off
+
+418:  LD  0,0(0)	*load id value
+
+* <- Id
+
+419:  LDC  1,1(0)	*array low bound
+
+420:  SUB  0,0,1	*
+
+421:  LDA  0,3(0)	* array type var relative address
+
+422:  LDA  1,0(4)	*var process
+
+423:  ADD  1,1,6	*var absolute address
+
+424:  LD  1,0(1)	*var sp
+
+425:  ADD  0,0,1	* var absolute off
+
+426:  LD  0,0(0)	*load id value
+
+* <- Id
+
+427:  OUT  0,0,0	*输出整数
+
+* ----写语句结束----
+
+* ----赋值语句----
+
+428:  LDC  0,0(0)	* base type var relative address
+
+429:  LDA  1,0(4)	*var process
+
+430:  ADD  1,1,6	*var absolute address
+
+431:  LD  1,0(1)	*var sp
+
+432:  ADD  0,0,1	* var absolute off
+
+433:  LDA  2,0(0)	*保存ac
+
+* -> 语法树节点 操作符 OP
+
+* -> 语法树节点 标识符 Id
+
+434:  LDC  0,0(0)	* base type var relative address
+
+435:  LDA  1,0(4)	*var process
+
+436:  ADD  1,1,6	*var absolute address
+
+437:  LD  1,0(1)	*var sp
+
+438:  ADD  0,0,1	* var absolute off
+
+439:  LD  0,0(0)	*load id value
+
+* <- Id
+
+440:  ST  0,0(3)	*op: push left
+
+* -> 语法树节点 常量 Const
+
+441:  LDC  0,1(0)	*load const
+
+* <- Const
+
+442:  LD  1,0(3)	*op: load left
+
+443:  ADD  0,1,0	*op +
+
+* <- Op
+
+444:  ST  0,0(2)	*dir
+
+* ----赋值语句结束----
+
+445:  LDC  7,389(0)	*jmp back to test
+
+* return to condition expression
+
+412:  JEQ  0,32(7)	*while: jmp out while
+
+* ----赋值语句结束----
+
+* ----主程序结束----
+
+446:  HALT  0,0,0	*

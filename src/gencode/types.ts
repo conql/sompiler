@@ -1,3 +1,5 @@
+export let mainOff: number = 0;
+
 // 标号地址表
 export interface labelAddr {
     label: number,
