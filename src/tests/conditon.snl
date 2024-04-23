@@ -4,8 +4,8 @@ var t v1;
  char v2; 
 begin 
  read(v1);
- if v1>10
-then v1:=v1+10
-else v1:=v1-10
+ if v1<10 
+then v1:=v1+10 
+else v1:=v1-10 
 write(v1) 
 end.

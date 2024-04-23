@@ -30,13 +30,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return tokens[tokenPointer];
 	};
 
-
-	/********************************************************************/
-	/* 函数名 programHead											    */
-	/* 功  能 程序头的处理函数								        	*/
 	/* 产生式 < programHead > ::= PROGRAM  ProgramName                  */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const programHead = () => {
 		// 创建一个程序头节点
 		const node: SymbolNodeCommon = {
@@ -57,13 +51,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 baseType		 							  	            */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < baseType > ::=  INTEGER | CHAR                          */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const baseType = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.INTEGER) {
 			match(LexicalType.INTEGER);
@@ -82,12 +70,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-	/********************************************************************/
-	/* 函数名 arrayType		 							                */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < arrayType > ::=  ARRAY [low..top] OF baseType           */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const arrayType = (node: SymbolNodeDecK) => {
 		node.attr = {}; // Initialize node.attr object
 		
@@ -117,13 +100,7 @@ export default function SyntacticParser(tokens: Token[]) {
 
 	};
 
-
-	/********************************************************************/
-	/* 函数名 fieldDecMore		 							            */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < fieldDecMore > ::=  ε | fieldDecList                   */ 
-	/*说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点   */
-	/********************************************************************/
 	const fieldDecMore = () => {
 		if (current().type === LexicalType.END)
 			return null;
@@ -161,13 +138,8 @@ export default function SyntacticParser(tokens: Token[]) {
 		idMore(node);
 	};
 
-	/********************************************************************/
-	/* 函数名 fieldDecList		 							            */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < fieldDecList > ::=   baseType idList ; fieldDecMore     */
 	/*                             | arrayType idList; fieldDecMore     */ 
-	/*说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点   */
-	/********************************************************************/
 	const fieldDecList = () => {
 		const node : SymbolNodeDecK = {
 			kind: SymbolNodeKind.DecK,
@@ -208,13 +180,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 recType		 							                */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < recType > ::=  RECORD fieldDecList END                  */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const recType = (node: SymbolNodeDecK) => {
 		match(LexicalType.RECORD);
 		const fieldDecList_ = fieldDecList();
@@ -227,13 +193,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		node.subKind = DecKinds.RecordK;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 structureType		 							            */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < structureType > ::=  arrayType | recType                */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const structureType = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.ARRAY) {
 			arrayType(node);
@@ -248,12 +208,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return null;
 	};
 
-	/********************************************************************/
-	/* 函数名 typeDecMore		 							            */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < typeDecMore > ::=    ε | TypeDecList                   */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const typeDecMore = () => {
 		if (current().type === LexicalType.VAR
 			|| current().type === LexicalType.PROCEDURE
@@ -269,13 +224,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return null;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 typeName		 							  	            */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < typeName > ::= baseType | structureType | id            */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const typeName = (node: SymbolNodeDecK): void => {
 		if (
 			current().type === LexicalType.INTEGER ||
@@ -303,13 +252,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-
-	/********************************************************************/
-	/* 函数名 TypeDecList		 							  	        */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < TypeDecList > ::= typeId = typeName ; typeDecMore       */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const typeDecList = () => {
 		// 具体节点，SybolNodeDecK类型，表示一个具体的声明
 		const node : SymbolNodeDecK = {
@@ -344,13 +287,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 TypeDeclaration									  	    */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < TypeDeclaration > ::= TYPE  TypeDecList                 */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const typeDeclaration = () => {
 		match(LexicalType.TYPE);
 		const node = typeDecList();
@@ -360,16 +297,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-
-	/**************************类型声明部分******************************/
-
-	/********************************************************************/
-	/* 函数名 typeDec									     		    */
-	/* 功  能 类型声明部分的处理函数						        	*/
 	/* 产生式 < typeDec > ::= ε | TypeDeclaration                      */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const typeDec = () => {
 		if (current().type === LexicalType.TYPE)
 		{
@@ -386,13 +314,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return null;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 varIdMore		 						                    */
-	/* 功  能 变量声明部分的处理函数						        	*/
 	/* 产生式 < varIdMore > ::=  ε |  , varIdList                      */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/  
 	const varIdMore = (node :SymbolNodeDecK) => {
 		if (current().type === LexicalType.SEMI)
 			return;
@@ -408,13 +330,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-
-	/********************************************************************/
-	/* 函数名 varIdList		 						                    */
-	/* 功  能 变量声明部分的处理函数						        	*/
 	/* 产生式 < varIdList > ::=  id  varIdMore                          */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const varIdList = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.ID) {
 			node.names.push(current().value);
@@ -427,13 +343,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		varIdMore(node);
 	};
 
-
-	/********************************************************************/
-	/* 函数名 varDecMore		 						                */
-	/* 功  能 变量声明部分的处理函数						        	*/
 	/* 产生式 < varDecMore > ::=  ε |  varDecList                      */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const varDecMore = () => {
 		let node = undefined;
 		if (current().type === LexicalType.PROCEDURE
@@ -455,13 +365,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 varDecList		 						                */
-	/* 功  能 变量声明部分的处理函数						        	*/
 	/* 产生式 < varDecList > ::=  typeName varIdList; varDecMore        */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const varDecList = () => {
 		const node: SymbolNodeDecK = {
 			kind: SymbolNodeKind.DecK,
@@ -482,13 +386,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 varDeclaration		 						            */
-	/* 功  能 变量声明部分的处理函数						        	*/
 	/* 产生式 < varDeclaration > ::=  VAR  varDecList                   */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const varDeclaration = () => {
 		match(LexicalType.VAR);
 		const node = varDecList();
@@ -498,15 +396,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/**************************变量声明部分******************************/
-
-	/********************************************************************/
-	/* 函数名 varDec		 						     	            */
-	/* 功  能 变量声明部分的处理函数						        	*/
 	/* 产生式 < varDec > ::=  ε |  varDeclaration                      */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const varDec = () => {
 		if (current().type === LexicalType.PROCEDURE
 		|| current().type === LexicalType.BEGIN
@@ -523,13 +413,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-
-	/********************************************************************/
-	/* 函数名 declarePart											    */
-	/* 功  能 声明部分的处理函数								     	*/
 	/* 产生式 < declarePart > ::= 类型声明-typeDec  变量声明-varDec  过程声明-procDec              */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const declarePart = () => {
 		// 类型声明
 		let typeP: SymbolNodeCommon|null = {
@@ -586,12 +470,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return pp;
 	};
 
-	/********************************************************************/
-	/* 函数名 fidMore		 			    	                        */
-	/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
 	/* 产生式 < fidMore > ::=   ε |  , formList                        */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const fidMore = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.SEMI
 			|| current().type === LexicalType.RPAREN)
@@ -608,12 +487,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-	/********************************************************************/
-	/* 函数名 formList		 			    	                        */
-	/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
 	/* 产生式 < formList > ::=  id  fidMore                             */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const formList = (node: SymbolNodeDecK) => {
 		if (current().type === LexicalType.ID) {
 			node.names.push(current().value);
@@ -625,13 +499,8 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		fidMore(node);
 	};
-	
-	/********************************************************************/
-	/* 函数名 param		 			    	                            */
-	/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
+
 	/* 产生式 < param > ::=  typeName formList | VAR typeName formList  */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const param = () => {
 		const node : SymbolNodeDecK = {
 			kind: SymbolNodeKind.DecK,
@@ -669,13 +538,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 paramMore		 			    	                        */
-	/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
 	/* 产生式 < paramMore > ::=  ε | ; paramDecList                     */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const paramMore = () => {
 		if (current().type === LexicalType.RPAREN)
 			return null;
@@ -695,13 +558,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-		
-	/********************************************************************/
-	/* 函数名 paramDecList		 			    	                    */
-	/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
 	/* 产生式 < paramDecList > ::=  param  paramMore                    */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/	
 	const paramDecList = () => {
 		const t = param();
 		const p = paramMore();
@@ -710,14 +567,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-		
-	/********************************************************************/
-	/* 函数名 paramList		 						                    */
-	/* 功  能 函数声明中参数声明部分的处理函数	        	        	*/
 	/* 产生式 < paramList > ::=  ε |  paramDecList                     */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const paramList = (node: SymbolNode) => {
 		if (current().type === LexicalType.RPAREN)
 			return;
@@ -738,12 +588,7 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
-	/********************************************************************/
-	/* 函数名 programBody		 			  	                        */
-	/* 功  能 程序体部分的处理函数	                    	        	*/
 	/* 产生式 < programBody > ::=  BEGIN  stmList   END                 */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const programBody = () => {
 		const node : SymbolNodeCommon = {
 			kind: SymbolNodeKind.StmLK,
@@ -763,13 +608,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 procBody		 			  	                            */
-	/* 功  能 函数体部分的处理函数	                    	        	*/
 	/* 产生式 < procBody > ::=  programBody                             */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const procBody = () => {
 		const node = programBody();
 		if (!node) {
@@ -778,30 +617,16 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-	/********************************************************************/
-	/* 函数名 procDecPart		 			  	                        */
-	/* 功  能 函数中的声明部分的处理函数	             	        	*/
 	/* 产生式 < procDecPart > ::=  declarePart                          */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const procDecPart = () => {
 		return declarePart();
 	};
 
-
-	/********************************************************************/
-	/* 函数名 procDeclaration		 						            */
-	/* 功  能 函数声明部分的处理函数						        	*/
 	/* 产生式 < procDeclaration > ::=  PROCEDURE                        */
 	/*                                 ProcName(paramList);             */
 	/*                                 procDecPart                      */
 	/*                                 procBody                         */
 	/*                                 procDec                          */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/*        函数的根节点用于记录该函数的名字；第一个子节点指向参数节  */
-	/*        点，第二个节点指向函数中的声明部分节点；第三个节点指向函  */
-	/*        数体。
-/********************************************************************/
 	const procDeclaration = () => {
 		const node : SymbolNodeCommon = {
 			kind: SymbolNodeKind.ProcDecK,
@@ -836,13 +661,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return node;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 procDec		 						                    */
-	/* 功  能 函数声明部分的处理函数						        	*/
 	/* 产生式 < procDec > ::=  ε |  procDeclaration                    */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const procDec = () => {
 		if (current().type === LexicalType.BEGIN)
 			return null;
@@ -855,17 +674,8 @@ export default function SyntacticParser(tokens: Token[]) {
 		return null;
 	};
 
-
-
-	/********************************************************************/
-	/* 函数名 fieldvarMore  											*/
-	/* 功  能 变量处理函数												*/
 	/* 产生式 fieldvarMore   ::=  ε                             		*/
 	/*                           | [exp]            {[}                 */ 
-	/* 说  明 该函数根据产生式调用相应的递归处理域变量为数组类型的情况	*/
-	/********************************************************************/
-	
-	
 	const fieldVarMore = (node: SymbolNodeExpK) => {
 		let p:SymbolNodeExpK;
 
@@ -905,13 +715,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 	};
 
-
-	/********************************************************************/
-	/* 函数名 fieldvar													*/
-	/* 功  能 变量处理函数												*/
 	/* 产生式 fieldvar   ::=  id  fieldvarMore                          */ 
-	/* 说  明 该函数根据产生式，处理域变量，并生成其语法树节点       	*/
-	/********************************************************************/
 	const fieldVar = () => {
 		const t : SymbolNodeExpK = {
 			kind: SymbolNodeKind.ExpK,
@@ -935,16 +739,9 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 variMore													*/
-	/* 功  能 变量处理函数												*/
 	/* 产生式 variMore   ::=  ε                             			*/
 	/*                       | [exp]            {[}                     */
 	/*                       | . fieldvar       {DOT}                   */ 
-	/* 说  明 该函数根据产生式调用相应的递归处理变量中的几种不同类型	*/
-	/********************************************************************/		
-	
 	const variMore = (node: SymbolNodeExpK) => {
 		let p:SymbolNodeExpK;
 		let p2:SymbolNodeExpK;
@@ -994,12 +791,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		}	
 	};
 
-	/********************************************************************/
-	/* 函数名 variable													*/
-	/* 功  能 变量处理函数												*/
 	/* 产生式 variable   ::=   id variMore                   			*/
-	/* 说  明 该函数根据产生式,	处理变量，生成其语法树节点              */
-	/********************************************************************/
 	const variable = () => {
 		const t : SymbolNodeExpK = {
 			kind: SymbolNodeKind.ExpK,
@@ -1023,13 +815,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/****************************************************************************/
-	/* 函数名 factor															*/
-	/* 功  能 因子处理函数														*/
 	/* 产生式 factor ::= ( exp ) | INTC | variable                  			*/
-	/* 说  明 该函数根据产生式调用相应的递归处理函数,生成表达式类型语法树节点	*/
-	/****************************************************************************/
 	const factor = () => {
 		// 这里可能有问题，原文是 TreeNode * t = NULL;
 		// 但是实际上按照下面的switch过程，要么正常返回，要么报错
@@ -1090,13 +876,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/****************************************************************************/
-	/* 函数名 term																*/
-	/* 功  能 项处理函数														*/
 	/* 产生式 < 项 > ::= < 因子 > { < 乘法运算符 > < 因子 > }					*/
-	/* 说  明 该函数根据产生式调用相应递归处理函数,生成表达式类型语法树节点		*/
-	/****************************************************************************/
 	const term = () => {
 		let t = factor();
 		
@@ -1131,13 +911,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/************************************************************************/
-	/* 函数名 simple_exp													*/
-	/* 功  能 简单表达式处理函数											*/
 	/* 产生式 < 简单表达式 >::=	< 项 > { < 加法运算符 > < 项 > }			*/
-	/* 说  明 该函数根据产生式调用相应递归处理函数,生成表达式类型语法树节点	*/
-	/************************************************************************/
 	const simpleExp = () => {
 		let t = term();
 
@@ -1170,13 +944,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/****************************************************************************/
-	/* 函数名 exp																*/
-	/* 功  能 表达式处理函数													*/
 	/* 产生式 < 表达式 > ::= < 简单表达式 > [< 关系运算符 > < 简单表达式 > ]	*/
-	/* 说  明 该函数根据产生式调用相应递归处理函数,生成表达式类型语法树节点		*/
-	/****************************************************************************/
 	const exp = () => {
 		let t = simpleExp();
 		if (current().type === LexicalType.LT
@@ -1210,13 +978,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 conditionalStm		 			                        */
-	/* 功  能 条件语句部分的处理函数	                    	        */
 	/* 产生式 < conditionalStm > ::= IF exp THEN stmList ELSE stmList FI*/ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const conditionalStm = () => {
 		const t: SymbolNodeStmtK = {
 			kind: SymbolNodeKind.StmtK,
@@ -1248,13 +1010,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 loopStm          		 			                        */
-	/* 功  能 循环语句部分的处理函数	                    	        */
 	/* 产生式 < loopStm > ::=      WHILE exp DO stmList ENDWH           */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const loopStm = () => {
 		const t : SymbolNodeStmtK = {
 			kind: SymbolNodeKind.StmtK,
@@ -1279,13 +1035,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 inputStm          		     	                        */
-	/* 功  能 输入语句部分的处理函数	                    	        */
 	/* 产生式 < inputStm > ::=    READ(id)                              */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const inputStm = () => {
 		const t : SymbolNodeStmtK = {
 			kind: SymbolNodeKind.StmtK,
@@ -1306,12 +1056,7 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
-	/********************************************************************/
-	/* 函数名 outputStm          		     	                        */
-	/* 功  能 输出语句部分的处理函数	                    	        */
 	/* 产生式 < outputStm > ::=   WRITE(exp)                            */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const outputStm = () => {
 		const t : SymbolNodeStmtK = {
 			kind: SymbolNodeKind.StmtK,
@@ -1331,13 +1076,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 returnStm          		     	                        */
-	/* 功  能 返回语句部分的处理函数	                    	        */
 	/* 产生式 < returnStm > ::=   RETURN                                */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const returnStm = () => {
 		const t : SymbolNodeStmtK = {
 			kind: SymbolNodeKind.StmtK,
@@ -1351,12 +1090,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-	/********************************************************************/
-	/* 函数名 assignmentRest		 			                        */
-	/* 功  能 赋值语句部分的处理函数	                    	        */
 	/* 产生式 < assignmentRest > ::=  variMore : = exp                  */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const assignmentRest = (temp_name : string) => {
 		// 创建具体节点，statement节点
 		const t : SymbolNodeStmtK = {
@@ -1394,12 +1128,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-	/********************************************************************/
-	/* 函数名 actParamMore          		   	                        */
-	/* 功  能 函数调用实参部分的处理函数	                	        */
 	/* 产生式 < actParamMore > ::=     ε |  , actParamList             */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const actParamMore = () => {
 		let t = null;
 		switch(current().type){
@@ -1417,14 +1146,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-
-	/********************************************************************/
-	/* 函数名 actParamList          		   	                        */
-	/* 功  能 函数调用实参部分的处理函数	                	        */
 	/* 产生式 < actParamList > ::=     ε |  exp actParamMore           */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const actParamList = () => {
 		let t = null;
 		switch(current().type){
@@ -1447,13 +1169,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 callStmRest          		     	                        */
-	/* 功  能 函数调用语句部分的处理函数	                  	        */
 	/* 产生式 < callStmRest > ::=  (actParamList)                       */
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const callStmRest = (temp_name:string) => {
 		const t : SymbolNodeStmtK = {
 			kind: SymbolNodeKind.StmtK,
@@ -1492,13 +1208,8 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
-	/********************************************************************/
-	/* 函数名 assCall		 			  	                            */
-	/* 功  能 语句部分的处理函数	                    	        	*/
 	/* 产生式 < assCall > ::=   assignmentRest   { :=,LMIDPAREN,DOT }     */
 	/*                        | callStmRest      { ( }                    */  
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const assCall = (temp_name : string) => {
 		let t = null;
 		switch(current().type){
@@ -1519,17 +1230,12 @@ export default function SyntacticParser(tokens: Token[]) {
 	};
 
 
-	/********************************************************************/
-	/* 函数名 stm   		 			  	                            */
-	/* 功  能 语句部分的处理函数	                    	        	*/
 	/* 产生式 < stm > ::=   conditionalStm   {IF}                       */
 	/*                    | loopStm          {WHILE}                    */
 	/*                    | inputStm         {READ}                     */
 	/*                    | outputStm        {WRITE}                    */
 	/*                    | returnStm        {RETURN}                   */
 	/*                    | id  assCall      {id}                       */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const stm = () => {
 		// 这里返回值类型需要控制
 		let t : SymbolNodeStmtK | null = null;
@@ -1563,13 +1269,7 @@ export default function SyntacticParser(tokens: Token[]) {
 		return t;
 	};
 
-
-	/********************************************************************/
-	/* 函数名 stmMore		 			  	                            */
-	/* 功  能 语句部分的处理函数	                    	        	*/
 	/* 产生式 < stmMore > ::=   ε |  ; stmList                         */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const stmMore = () => {
 		let t= null;
 		switch(current().type){
@@ -1589,14 +1289,8 @@ export default function SyntacticParser(tokens: Token[]) {
 		}
 		return t;
 	};
-
-
-	/********************************************************************/
-	/* 函数名 stmList		 			  	                            */
-	/* 功  能 语句部分的处理函数	                    	        	*/
+	
 	/* 产生式 < stmList > ::=  stm    stmMore                           */ 
-	/* 说  明 函数根据文法产生式,调用相应的递归处理函数,生成语法树节点  */
-	/********************************************************************/
 	const stmList = () => {
 		const node = stm();
 		const stm_more = stmMore();

@@ -1,18 +1,3 @@
-export let mainOff: number = 0;
-
-// 标号地址表
-export interface labelAddr {
-    label: number,
-    dest: number,
-    next: labelAddr
-}
-
-// 回填地址结构
-export interface backAddr {
-    backLoc: number;
-    former: backAddr;
-}
-
 // TM汇编寄存器
 export enum regs {
     ac = 0,
@@ -25,6 +10,18 @@ export enum regs {
     pc = 7
 }
 
+// 标号地址表
+// export interface labelAddr {
+//     label: number,
+//     dest: number,
+//     next: labelAddr
+// }
+
+// 回填地址结构
+// export interface backAddr {
+//     backLoc: number;
+//     former: backAddr;
+// }
 
 // // MIPS寄存器
 // export enum regs {
