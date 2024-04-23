@@ -44,7 +44,7 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 			/*可能是下标类型或者域类型或者是基本变量类型,把地址取出送入ac*/
 
 			/*普通变量*/
-			if (node.children[0] == null) {
+			if (!node.children[0]) {
 				emitter.emitRM("LDC", regs.ac, Loc, 0, " base type var relative address");
 			}
 			/*数组类型变量*/
@@ -65,7 +65,7 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 			/*记录类型变量*/
 			else if (node.attr.varKind == VarKinds.FieldMembV) {
 				/*处理域变量的偏移*/
-				fieldMem!.recordAttr != node.table[0].attr.type.recordAttr!;
+				fieldMem!.recordAttr!= node.table[0].attr.type.recordAttr!;
 				// fieldMem = t -> table[0] -> attrIR.idtype -> More.body;
 
 				/*在域表中查找该域变量*/
@@ -79,7 +79,7 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 						ind++;
 				}
 				/*域变量为基本类型变量*/
-				if (node.children[0].children[0] == null) {
+				if (!node.children[0].children[0]) {
 					emitter.emitRM("LDC", regs.ac, Loc, 0, "");
 					emitter.emitRM("LDA", regs.ac, fieldMem!.recordAttr![ind].offset, regs.ac, "field type var relative address");
 					/*此时ac中存放的是相对偏移*/
@@ -87,13 +87,12 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 
 				/*域变量是数组变量的情况*/
 				else {
-					genExp(node.children[0].children[0]);
+					genExp(node.children[0].children[0] as SymbolNodeExpK);
 
 					// 这里的as可能有错误
-
 					const t = node.children[0] as SymbolNodeDecK;
 					emitter.emitRM("LDC", regs.ac1, t.attr!.low!, 0, "array low");
-					/*数组下标减去下届*/
+					/*数组下标减去下界*/
 					emitter.emitRO("SUB", regs.ac, regs.ac, regs.ac1, "");
 					emitter.emitRM("LDA", regs.ac, fieldMem!.recordAttr![ind].offset, regs.ac, "");
 
@@ -120,9 +119,9 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 		let ss: number;    // 用于控制转移display表的各项sp值
 		let savedLoc1, savedLoc2, currentLoc: number;    // 记录跳转回填地址
 		let p0, p1, pp, p2: SymbolNode;    // 用于遍历子节点
-		let entry: SemanticTableItem;
+		// let entry: SemanticTableItem;
 		let formParam: number;    // 用于记录形参个数
-		let fieldMem: TypeDetail;    // 用于记录域成员
+		// let fieldMem: TypeDetail;    // 用于记录域成员
 		// 对应 ParamTalbe * curParam = NULL;
 		let curParam: SemanticTableItem[];  // 指向实参的指针
 
@@ -135,20 +134,34 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 				p0 = node.children[0];  // 条件表达式
 				p1 = node.children[1];  // then语句序列
 				p2 = node.children[2];  // else语句序列
+
+				emitter.emitComment("if: 生成条件表达式代码");
 				cGen(p0);   // 生成测试表达式代码
 
 				savedLoc1 = emitter.emitSkip(1);    // 保存跳转地址
-				emitter.emitComment("if: jump to else belongs here");
+				emitter.emitComment("if: 保留回填语句地址 = " +savedLoc1+" 该语句应当跳转到else后内容");
 
+
+				emitter.emitComment("if: 生成then语句序列代码");
 				cGen(p1);   // 生成then语句序列代码
+				emitter.emitComment("if: 生成then语句序列代码结束");
+
 				savedLoc2 = emitter.emitSkip(1);    // 保存跳转地址
-				emitter.emitComment("if: jump to end belongs here");
+				emitter.emitComment("if: 保留回填语句地址 = " +savedLoc2+" 该语句应当跳转到end后内容");
 
-				currentLoc = emitter.emitSkip(0);    // 获取当前地址
-				emitter.emitBackup(savedLoc1);    // 回填跳转地址
+				// *********************************
+				//	源代码中为 emitter.emitRM_Abs("JEQ", regs.ac, currentLoc, "if: jmp to else");
+				//	经过分析，如果为0，导致跳转地址为end语句，而不是else的第一句
+				//	所以修改为 emitter.emitRM_Abs("JEQ", regs.ac, currentLoc+1, "if: jmp to else");
+				// *********************************
 
-				emitter.emitRM_Abs("JEQ", regs.ac, currentLoc, "if: jmp to else");
+				currentLoc = emitter.emitSkip(0);    // 获取当前地址，为else后面第一句内容
+				emitter.emitBackup(savedLoc1);    // 回填跳转地址，返回saveLoc1，填写跳转
+				
+				emitter.emitRM_Abs("JEQ", regs.ac, currentLoc+1, "if: jmp to else");
 				emitter.emitRestore();  // 返回到当前位置
+
+				emitter.emitComment("if: 生成else语句序列代码");
 				cGen(p2);   // 生成else语句序列代码
 				currentLoc = emitter.emitSkip(0);    // 获取当前地址
 				emitter.emitBackup(savedLoc2);    // 回填跳转地址
@@ -379,12 +392,10 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 
 
 	// 根据语法树节点产生exp表达式代码
-	function genExp(node: SymbolNode) {
+	function genExp(node: SymbolNodeExpK) {
 		/* 语法树节点各个子节点 */
 		let p1: SymbolNode;
 		let p2: SymbolNode;
-
-		node = node as SymbolNodeExpK;
 
 		/* 对语法树节点的表达式类型细分处理 */
 		switch (node.subKind) {
@@ -438,10 +449,10 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 				if (emitter.TraceCode) emitter.emitComment("-> 语法树节点 操作符 OP");
 
 				/* 语法树节点tree第一子节点为左操作数,赋给p1 */
-				const p1 = node.children[0];
+				p1 = node.children[0];
 
 				/* 语法树节点tree第二子节点为右操作数,赋给p2 */
-				const p2 = node.children[1];
+				p2 = node.children[1];
 
 				/* 对第一子节点递归调用函数cGen(),为左操作数生成目标代码 */
 				cGen(p1);
@@ -485,20 +496,20 @@ export default function codeGenerator(root: SymbolNodeCommon) {
 					case ExpOp.LT:
 
 						/* 写入减指令,将(左-右)操作数相减,结果送累加器ac */
-						emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op <");
+						emitter.emitRO("SUB", regs.ac, regs.ac1, regs.ac, "op 小于判断");
 
 						/* 写入判断跳转指令,如果累加器ac的值小于0, *
 										 * 则代码指令指示器跳过两条指令    */
-						emitter.emitRM("JLT", regs.ac, 2, regs.pc, "br if true");
+						emitter.emitRM("JLT", regs.ac, 2, regs.pc, "真：跳过2指令");
 
 						/* 写入载入常量指令,将累加器ac赋值为0 */
-						emitter.emitRM("LDC", regs.ac, 0, regs.ac, "false case");
+						emitter.emitRM("LDC", regs.ac, 0, regs.ac, "假：");
 
 						/* 写入数值载入指令,代码指令指示器pc跳过下一条指令 */
-						emitter.emitRM("LDA", regs.pc, 1, regs.pc, "unconditional jmp");
+						emitter.emitRM("LDA", regs.pc, 1, regs.pc, "跳转");
 
 						/* 写入载入常量指令,将累加器ac赋值为1 */
-						emitter.emitRM("LDC", regs.ac, 1, regs.ac, "true case");
+						emitter.emitRM("LDC", regs.ac, 1, regs.ac, "真：");
 						break;
 
 

@@ -1,16 +1,16 @@
-* SNL目标代码
+*SNL目标代码
 
-* 标准预备工作:
+*标准预备工作:
 
 0:  LD  3,0(0)	*从0地址处载入最大地址值
 
 1:  ST  0,0(0)	*清空0地址单元内容
 
-* 预备工作结束
+*预备工作结束
 
-* ----过程q----
+*----过程q----
 
-* ----赋值语句----
+*----赋值语句----
 
 3:  LDC  0,8(0)	* base type var relative address
 
@@ -24,7 +24,7 @@
 
 8:  LDA  2,0(0)	*保存ac
 
-* -> 语法树节点 标识符 Id
+*-> 语法树节点 标识符 Id
 
 9:  LDC  0,7(0)	* base type var relative address
 
@@ -38,15 +38,15 @@
 
 14:  LD  0,0(0)	*load id value
 
-* <- Id
+*<- Id
 
 15:  ST  0,0(2)	*dir
 
-* ----赋值语句结束----
+*----赋值语句结束----
 
-* ----写语句----
+*----写语句----
 
-* -> 语法树节点 标识符 Id
+*-> 语法树节点 标识符 Id
 
 16:  LDC  0,8(0)	* base type var relative address
 
@@ -60,21 +60,21 @@
 
 21:  LD  0,0(0)	*load id value
 
-* <- Id
+*<- Id
 
 22:  OUT  0,0,0	*输出整数
 
-* ----写语句结束----
+*----写语句结束----
 
 23:  LD  2,1(6)	*退出AR
 
 24:  LDA  7,0(2)	*
 
-* ----过程q结束----
+*----过程q结束----
 
 2:  LDA  7,25(0)	*主程序入口
 
-* ----主程序----
+*----主程序----
 
 25:  LDC  0,0(0)	*将ac置0
 
@@ -90,7 +90,7 @@
 
 31:  LDA  5,1(4)	*main top
 
-* ----读语句----
+*----读语句----
 
 32:  IN  0,0,0	*读一个整数
 
@@ -108,13 +108,15 @@
 
 39:  ST  2,0(0)	*dir 存入值
 
-* ----读语句结束----
+*----读语句结束----
 
-* ----if语句----
+*----if语句----
 
-* -> 语法树节点 操作符 OP
+*if: 生成条件表达式代码
 
-* -> 语法树节点 标识符 Id
+*-> 语法树节点 操作符 OP
+
+*-> 语法树节点 标识符 Id
 
 40:  LDC  0,0(0)	* base type var relative address
 
@@ -128,33 +130,35 @@
 
 45:  LD  0,0(0)	*load id value
 
-* <- Id
+*<- Id
 
 46:  ST  0,0(3)	*op: push left
 
-* -> 语法树节点 常量 Const
+*-> 语法树节点 常量 Const
 
 47:  LDC  0,10(0)	*load const
 
-* <- Const
+*<- Const
 
 48:  LD  1,0(3)	*op: load left
 
-49:  SUB  0,1,0	*op <
+49:  SUB  0,1,0	*op 小于判断
 
-50:  JLT  0,2(7)	*br if true
+50:  JLT  0,2(7)	*真：跳过2指令
 
-51:  LDC  0,0(0)	*false case
+51:  LDC  0,0(0)	*假：
 
-52:  LDA  7,1(7)	*unconditional jmp
+52:  LDA  7,1(7)	*跳转
 
-53:  LDC  0,1(0)	*true case
+53:  LDC  0,1(0)	*真：
 
-* <- Op
+*<- Op
 
-* if: jump to else belongs here
+*if: jump to else belongs here
 
-* ----赋值语句----
+*if: 生成then语句序列代码
+
+*----赋值语句----
 
 55:  LDC  0,0(0)	* base type var relative address
 
@@ -168,9 +172,9 @@
 
 60:  LDA  2,0(0)	*保存ac
 
-* -> 语法树节点 操作符 OP
+*-> 语法树节点 操作符 OP
 
-* -> 语法树节点 标识符 Id
+*-> 语法树节点 标识符 Id
 
 61:  LDC  0,0(0)	* base type var relative address
 
@@ -184,31 +188,33 @@
 
 66:  LD  0,0(0)	*load id value
 
-* <- Id
+*<- Id
 
 67:  ST  0,0(3)	*op: push left
 
-* -> 语法树节点 常量 Const
+*-> 语法树节点 常量 Const
 
 68:  LDC  0,10(0)	*load const
 
-* <- Const
+*<- Const
 
 69:  LD  1,0(3)	*op: load left
 
 70:  ADD  0,1,0	*op +
 
-* <- Op
+*<- Op
 
 71:  ST  0,0(2)	*dir
 
-* ----赋值语句结束----
+*----赋值语句结束----
 
-* if: jump to end belongs here
+*if: jump to end belongs here
 
-54:  JEQ  0,17(7)	*if: jmp to else
+54:  JEQ  0,18(7)	*if: jmp to else
 
-* ----赋值语句----
+*if: 生成else语句序列代码
+
+*----赋值语句----
 
 73:  LDC  0,0(0)	* base type var relative address
 
@@ -222,9 +228,9 @@
 
 78:  LDA  2,0(0)	*保存ac
 
-* -> 语法树节点 操作符 OP
+*-> 语法树节点 操作符 OP
 
-* -> 语法树节点 标识符 Id
+*-> 语法树节点 标识符 Id
 
 79:  LDC  0,0(0)	* base type var relative address
 
@@ -238,31 +244,31 @@
 
 84:  LD  0,0(0)	*load id value
 
-* <- Id
+*<- Id
 
 85:  ST  0,0(3)	*op: push left
 
-* -> 语法树节点 常量 Const
+*-> 语法树节点 常量 Const
 
 86:  LDC  0,10(0)	*load const
 
-* <- Const
+*<- Const
 
 87:  LD  1,0(3)	*op: load left
 
 88:  SUB  0,1,0	*op -
 
-* <- Op
+*<- Op
 
 89:  ST  0,0(2)	*dir
 
-* ----赋值语句结束----
+*----赋值语句结束----
 
 72:  LDA  7,16(7)	*jmp to end
 
-* ----if语句结束----
+*----if语句结束----
 
-* ----过程调用----
+*----过程调用----
 
 90:  LDC  0,0(0)	* base type var relative address
 
@@ -336,6 +342,6 @@
 
 125:  LD  6,0(6)	* resume sp
 
-* ----主程序结束----
+*----主程序结束----
 
 126:  HALT  0,0,0	*

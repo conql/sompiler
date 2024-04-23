@@ -13,7 +13,7 @@ export default class codeEmitter{
     // 注释生成
     emitComment(c: string) {
         if (this.TraceCode) {
-            this.code.push(`* ${c}\n`);
+            this.code.push(`*${c}\n`);
         }
     }
 
